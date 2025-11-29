@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full"> <!-- Added h-full to the html element -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Arcade - Gaming Hub</title>
+    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind for custom theme and liquid glass effect --><script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-neon': '#4ade80', // Green Neon
+                        'secondary-glow': '#00ffff', // Electric Cyan
+                        'dark-bg': '#0f172a', // Slate Blue Dark
+                        'card-bg': 'rgba(15, 23, 42, 0.8)', // Semi-transparent Slate 900, darker base
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    keyframes: {
+                        'glow': {
+                            '0%, 100%': { filter: 'drop-shadow(0 0 4px #4ade80)' },
+                            '50%': { filter: 'drop-shadow(0 0 8px #00ffff)' }, /* Updated to Cyan */
+                        },
+                        'gradient-shift': {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                            '100%': { backgroundPosition: '0% 50%' },
+                        }
+                    },
+                    animation: {
+                        'pulse-glow': 'glow 3s infinite ease-in-out',
+                        'bg-shift': 'gradient-shift 20s ease infinite', /* Slightly slower animation */
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles for the "liquid glass" effect */
+        .glass-card {
+            background-color: var(--card-bg);
+            /* Increased blur from 10px to 20px for better readability */
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 255, 255, 0.15); /* Subtle Cyan shadow for depth */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(0, 255, 255, 0.3); /* Stronger glow on hover */
+        }
+
+        /* Set the background image with blur */
+        body {
+            /* Fix for background responsiveness: ensures the background covers the entire body height */
+            background: url('resources/images/background/bg.png') no-repeat center center;
+            background-size: cover;
+            background-attachment: fixed; /* Keep background fixed relative to the viewport for a scrolling effect */
+            min-height: 100vh; /* Ensure full viewport height */
+            
+            /* Apply a *subtle* blur to the overall background to keep content readable */
+            -webkit-backdrop-filter: blur(3px); 
+            backdrop-filter: blur(3px);
+            background-color: #0A001C; /* Fallback color in case image doesn't load */
+            
+            /* Crucial for fixing white margins/borders: */
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+        }
+        
+        /* Ensure the main container wraps all content and extends the body height */
+        #app {
+            min-height: 100vh;
+        }
+        
+        /* Custom image container height to control card size better */
+        .game-image-container {
+            width: 100%;
+            /* Use padding-top for a responsive 16:9 aspect ratio or similar, 
+               but here we'll let it be flexible based on image and content padding */
+            padding-bottom: 0; /* Remove potential unwanted space */
+        }
+        
+    </style>
+</head>
+<body class="font-sans text-white h-full m-0 p-0"> <!-- Added m-0 p-0 classes -->
+
+    <div id="app" class="p-4 md:p-8">
+        <!-- Header & Navigation --><header class="flex justify-between items-center mb-12 glass-card rounded-xl p-4 md:p-6 sticky top-0 z-10">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-primary-neon animate-pulse-glow tracking-wider uppercase">
+                QUANTUM ARCADE
+            </h1>
+            <div class="flex space-x-4">
+                <button id="signupBtn" onclick="handleSignup()"
+                    class="bg-primary-neon text-dark-bg font-bold py-2 px-6 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-white shadow-lg shadow-primary-neon/50 hidden sm:block">
+                    Sign Up
+                </button>
+                <button id="loginBtn" onclick="handleLogin()"
+                    class="bg-secondary-glow text-dark-bg font-bold py-2 px-6 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-white shadow-lg shadow-secondary-glow/50">
+                    Log In
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Grid --><main class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold mb-8 text-white uppercase tracking-wide border-b border-secondary-glow/50 pb-2">Featured Games</h2>
+            <div id="gameGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <!-- Game cards will be injected here by JavaScript --></div>
+        </main>
+
+        <!-- Footer - NO blur applied --><footer class="mt-20 pt-8 border-t border-secondary-glow/20 text-center text-gray-400">
+            <p>&copy; 2025 Quantum Arcade. Game data simulated.</p>
+        </footer>
+    </div>
+
+    <!-- Login Modal Structure --><div id="loginModal" onclick="closeModalOutside(event, 'loginModal', 'loginCard')"
+        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none">
+        <div id="loginCard" class="glass-card rounded-2xl p-8 w-11/12 max-w-md transform scale-90 transition-all duration-300 border-2 border-secondary-glow/30">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-secondary-glow uppercase">ACCESS PROTOCOL</h2>
+                <button onclick="closeModal('loginModal', 'loginCard')" class="text-gray-400 hover:text-secondary-glow transition rounded-full p-1 hover:bg-secondary-glow/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label for="login-username" class="block text-sm font-medium text-gray-300 mb-1">Username/Email</label>
+                    <input type="text" id="login-username" name="username" required
+                        class="w-full p-3 rounded-lg bg-white/10 border border-secondary-glow/50 focus:border-secondary-glow focus:ring-2 focus:ring-secondary-glow transition duration-200 text-white placeholder-gray-500"
+                        placeholder="Enter your handle or email">
+                </div>
+                <div class="mb-6">
+                    <label for="login-password" class="block text-sm font-medium text-gray-300 mb-1">Password</label>
+                    <input type="password" id="login-password" name="password" required
+                        class="w-full p-3 rounded-lg bg-white/10 border border-secondary-glow/50 focus:border-secondary-glow focus:ring-2 focus:ring-secondary-glow transition duration-200 text-white placeholder-gray-500"
+                        placeholder="Secure code">
+                </div>
+                <button type="submit" onclick="authenticateUser(event)"
+                    class="w-full bg-secondary-glow text-dark-bg font-bold py-3 rounded-lg transition duration-300 transform hover:scale-[1.02] hover:bg-white shadow-xl shadow-secondary-glow/50 tracking-wider text-lg uppercase">
+                    INITIATE LOGIN
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Signup Modal Structure --><div id="signupModal" onclick="closeModalOutside(event, 'signupModal', 'signupCard')"
+        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none">
+        <div id="signupCard" class="glass-card rounded-2xl p-8 w-11/12 max-w-md transform scale-90 transition-all duration-300 border-2 border-primary-neon/30">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-primary-neon uppercase">CREATE ACCOUNT</h2>
+                <button onclick="closeModal('signupModal', 'signupCard')" class="text-gray-400 hover:text-primary-neon transition rounded-full p-1 hover:bg-primary-neon/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="signupForm">
+                <div class="mb-4">
+                    <label for="signup-username" class="block text-sm font-medium text-gray-300 mb-1">Username</label>
+                    <input type="text" id="signup-username" name="username" required
+                        class="w-full p-3 rounded-lg bg-white/10 border border-primary-neon/50 focus:border-primary-neon focus:ring-2 focus:ring-primary-neon transition duration-200 text-white placeholder-gray-500"
+                        placeholder="Choose your battle tag">
+                </div>
+                <div class="mb-4">
+                    <label for="signup-email" class="block text-sm font-medium text-gray-300 mb-1">Email Address</label>
+                    <input type="email" id="signup-email" name="email" required
+                        class="w-full p-3 rounded-lg bg-white/10 border border-primary-neon/50 focus:border-primary-neon focus:ring-2 focus:ring-primary-neon transition duration-200 text-white placeholder-gray-500"
+                        placeholder="Enter a valid email">
+                </div>
+                <div class="mb-6">
+                    <label for="signup-password" class="block text-sm font-medium text-gray-300 mb-1">Password</label>
+                    <input type="password" id="signup-password" name="password" required
+                        class="w-full p-3 rounded-lg bg-white/10 border border-primary-neon/50 focus:border-primary-neon focus:ring-2 focus:ring-primary-neon transition duration-200 text-white placeholder-gray-500"
+                        placeholder="Create a secure password">
+                </div>
+                <button type="submit" onclick="registerUser(event)"
+                    class="w-full bg-primary-neon text-dark-bg font-bold py-3 rounded-lg transition duration-300 transform hover:scale-[1.02] hover:bg-white shadow-xl shadow-primary-neon/50 tracking-wider text-lg uppercase">
+                    REGISTER USER
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        // Placeholder API URL - MUST be replaced with your deployed Apps Script URL
+        const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbw1cUoQmamxty2mEAzob1SH8O7GYrYaEw0RBEOEBN-i5ItzY31cA7ZVCVSXChydTLreKw/exec'; 
+        
+        // --- MOCK DATA (Fallback/Loading State) ---
+        const mockGamesData = [
+            { gameName: "Loading Data...", gameImageUrl: "https://placehold.co/400x250/1e3a8a/ffffff?text=Fetching+Data", gameUrl: "#" },
+            { gameName: "Loading Data...", gameImageUrl: "https://placehold.co/400x250/4c0519/ffffff?text=Fetching+Data", gameUrl: "#" },
+            { gameName: "Loading Data...", gameImageUrl: "https://placehold.co/400x250/065f46/ffffff?text=Fetching+Data", gameUrl: "#" },
+        ];
+
+
+        // --- FIREBASE/APP CONFIG (Kept for completeness) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+
+        // --- DATA FETCHING LOGIC (JSONP Implementation) ---
+
+        /**
+         * Global callback function to receive data from the JSONP API.
+         */
+        function handleGamesData(data) {
+            console.log('JSONP Callback received data.');
+            
+            if (Array.isArray(data) && data.length > 0) {
+                const gameData = data.filter(row => row.gameName && row.gameName.trim() !== ''); 
+                
+                if (gameData.length > 0) {
+                    renderGameCards(gameData);
+                    alertMessage(`Successfully loaded ${gameData.length} games.`, 'success');
+                } else {
+                    renderGameCards([{ gameName: "No Games Found", gameImageUrl: "https://placehold.co/400x250/252f43/ffffff?text=No+Data", gameUrl: "#" }]);
+                    alertMessage("Google Sheet returned empty or invalid data.", 'error');
+                }
+            } else {
+                renderGameCards([{ gameName: "No Games Found", gameImageUrl: "https://placehold.co/400x250/252f43/ffffff?text=No+Data", gameUrl: "#" }]);
+                alertMessage("Google Sheet returned empty or invalid data.", 'error');
+            }
+        }
+
+        /**
+         * Fetches game data using the JSONP technique to bypass CORS.
+         */
+        function fetchGamesFromGoogleSheet() {
+            console.log('Attempting to fetch game data using JSONP...');
+            
+            // Render loading state immediately
+            renderGameCards(mockGamesData);
+
+            if (GOOGLE_SHEET_API_URL.includes('YOUR_APPS_SCRIPT_WEB_APP_URL')) {
+                console.error("ERROR: Please replace 'YOUR_APPS_SCRIPT_WEB_APP_URL' with your deployed Apps Script URL.");
+                alertMessage("Configuration Error: Please deploy the Apps Script and update the URL in the code.", 'error');
+                return;
+            }
+
+            // Construct the JSONP URL
+            const scriptUrl = `${GOOGLE_SHEET_API_URL}?callback=handleGamesData`;
+            
+            // Create a new script element
+            const script = document.createElement('script');
+            script.src = scriptUrl;
+            
+            // Append the script element to the document to execute the JSONP request
+            document.head.appendChild(script);
+        }
+
+        // --- Generic Modal Functions (Kept unchanged) ---
+
+        /**
+         * Generic function to open a modal with animation.
+         */
+        function openModal(modalId, cardId) {
+            const modal = document.getElementById(modalId);
+            const card = document.getElementById(cardId);
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            // Animate card in (scales up)
+            card.classList.remove('scale-90');
+            card.classList.add('scale-100');
+        }
+
+        /**
+         * Generic function to close a modal with animation.
+         */
+        function closeModal(modalId, cardId) {
+            const modal = document.getElementById(modalId);
+            const card = document.getElementById(cardId);
+
+            // Animate card out (scales down)
+            card.classList.remove('scale-100');
+            card.classList.add('scale-90');
+
+            // Hide modal background after transition
+            setTimeout(() => {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+            }, 300); // Match CSS transition duration
+        }
+
+        /**
+         * Closes the modal if the click target is the modal backdrop itself.
+         * @param {Event} event - The click event.
+         * @param {string} modalId - ID of the modal wrapper.
+         * @param {string} cardId - ID of the modal content card.
+         */
+        function closeModalOutside(event, modalId, cardId) {
+            if (event.target.id === modalId) {
+                closeModal(modalId, cardId);
+            }
+        }
+
+        // --- Specific Auth/Modal Handlers (Kept unchanged) ---
+
+        function handleLogin() {
+            openModal('loginModal', 'loginCard');
+        }
+
+        function handleSignup() {
+            openModal('signupModal', 'signupCard');
+        }
+        
+        // Convenience functions for modal close buttons
+        function closeLoginModal() {
+            closeModal('loginModal', 'loginCard');
+        }
+
+        function closeSignupModal() {
+            closeModal('signupModal', 'signupCard');
+        }
+
+
+        /**
+         * Placeholder for login authentication logic.
+         */
+        function authenticateUser(event) {
+            event.preventDefault(); 
+            const username = document.getElementById('login-username').value;
+            
+            // NOTE: Replace this with your Firebase signInWithEmailAndPassword/signInWithCustomToken logic
+            console.log(`Attempting login for user: ${username}`);
+            alertMessage(`Login initiated for ${username}. Authentication logic coming soon!`, 'success');
+
+            closeModal('loginModal', 'loginCard');
+        }
+        
+        /**
+         * Placeholder for user registration logic.
+         */
+        function registerUser(event) {
+            event.preventDefault(); 
+            const username = document.getElementById('signup-username').value;
+            const email = document.getElementById('signup-email').value;
+
+            // NOTE: Replace this with your Firebase createUserWithEmailAndPassword logic
+            console.log(`Attempting registration for user: ${username} (${email})`);
+            alertMessage(`Registration initiated for ${username}. Account creation logic coming soon!`, 'success');
+
+            closeModal('signupModal', 'signupCard');
+        }
+
+        // --- Game Functions ---
+
+        /**
+         * Navigates to the game's external website.
+         * @param {string} url - The URL of the game website.
+         */
+        function openGame(url) {
+            console.log(`Opening game: ${url}`);
+            window.open(url, '_blank');
+        }
+
+        /**
+         * Creates and displays the game cards.
+         * @param {Array<Object>} games - Array of game objects.
+         */
+        function renderGameCards(games) {
+            const gameGrid = document.getElementById('gameGrid');
+            gameGrid.innerHTML = ''; // Clear previous content
+
+            games.forEach(game => {
+                const card = document.createElement('div');
+                // Removed overflow-hidden to ensure the image container is flexible
+                card.className = 'glass-card rounded-xl cursor-pointer group flex flex-col'; 
+                card.setAttribute('onclick', `openGame('${game.gameUrl}')`);
+
+                // Image Container - Used to manage image sizing flexibly
+                const imgContainer = document.createElement('div');
+                // Added p-0 and pb-0 to remove default padding that creates space
+                imgContainer.className = 'w-full flex justify-center items-center p-0 pb-0'; 
+
+                // Image Element - Set image width to fit container fully, object-contain to prevent cropping
+                const img = document.createElement('img');
+                img.src = game.gameImageUrl;
+                img.alt = `Cover art for ${game.gameName}`;
+                // Removed max-h-48, allowing height to be flexible based on image aspect ratio
+                img.className = 'w-full object-contain rounded-t-xl transition duration-300 transform group-hover:scale-[1.03]'; 
+                img.onerror = function() {
+                    // Fallback in case image URL is broken
+                    this.onerror=null;
+                    this.src='https://placehold.co/400x250/1f2937/ffffff?text=Image+Missing';
+                    this.className = 'w-full h-40 object-cover rounded-t-xl'; // Use fixed height for placeholder
+                };
+
+                // Content Element (restored to normal structure)
+                const content = document.createElement('div');
+                // Reduced padding to py-2 (from p-4) to minimize space below image
+                content.className = 'px-4 py-2 mt-auto'; 
+
+                const name = document.createElement('h3');
+                name.textContent = game.gameName;
+                name.className = 'text-xl font-semibold text-primary-neon group-hover:text-white transition duration-200'; 
+                
+                // Assemble the card
+                content.appendChild(name);
+                imgContainer.appendChild(img); // Image inside container
+                card.appendChild(imgContainer); // Container inside card
+                card.appendChild(content); 
+                gameGrid.appendChild(card);
+            });
+        }
+
+        // --- Custom Alert/Modal for Gaming UI (Kept unchanged) ---
+
+        /**
+         * Displays a non-intrusive, custom message box instead of alert().
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success' or 'error'.
+         */
+        function alertMessage(message, type = 'info') {
+            let messageBox = document.getElementById('messageBox');
+            if (!messageBox) {
+                messageBox = document.createElement('div');
+                messageBox.id = 'messageBox';
+                messageBox.className = 'fixed top-4 right-4 z-50 transition-transform duration-500 ease-out transform translate-x-full';
+                document.body.appendChild(messageBox);
+            }
+
+            const alertDiv = document.createElement('div');
+            const color = type === 'success' ? 'bg-primary-neon text-dark-bg' : 'bg-red-600 text-white';
+            alertDiv.className = `p-4 rounded-lg shadow-2xl mb-3 max-w-sm w-full ${color} transform transition duration-500 hover:scale-105`;
+            alertDiv.innerHTML = `<p class="font-bold">${message}</p>`;
+
+            // Add the new alert and make it visible
+            messageBox.prepend(alertDiv);
+            messageBox.classList.remove('translate-x-full');
+            messageBox.style.transform = 'translateX(0)';
+
+            // Auto-hide the alert
+            setTimeout(() => {
+                alertDiv.remove();
+                if (messageBox.children.length === 0) {
+                    messageBox.classList.add('translate-x-full');
+                    messageBox.style.transform = 'translateX(100%)';
+                }
+            }, 5000);
+        }
+
+        // --- Initialization on Load ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchGamesFromGoogleSheet(); // Start fetching data on load
+        });
+    </script>
+</body>
+</html>
