@@ -48,7 +48,7 @@
             box-shadow: 0 12px 40px 0 rgba(0, 255, 255, 0.3); /* Stronger glow on hover */
         }
 
-        /* Set the background image with blur - Fixes white borders on scroll */
+        /* Set the background image with dark overlay and blur */
         body {
             /* Ensures background covers entire scrollable area */
             background: url('resources/images/background/bg.png') no-repeat center center;
@@ -59,7 +59,10 @@
             /* Apply a *subtle* blur to the overall background to keep content readable */
             -webkit-backdrop-filter: blur(3px); 
             backdrop-filter: blur(3px);
-            background-color: #0A001C; 
+            
+            /* Add a dark overlay (75% black) using background-color */
+            background-color: rgba(0, 0, 0, 0.75); 
+            background-blend-mode: multiply; /* Blends the black color with the background image */
             
             /* Removes default browser margins/padding */
             margin: 0;
@@ -90,16 +93,19 @@
 
     <div id="app" class="p-4 md:p-8">
         <!-- Header & Navigation --><header class="flex justify-between items-center mb-12 glass-card rounded-xl p-4 md:p-6 sticky top-0 z-10">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-primary-neon animate-pulse-glow tracking-wider uppercase">
+            <!-- REDUCED FONT SIZE ON MOBILE (default text-2xl) -->
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary-neon animate-pulse-glow tracking-wider uppercase">
                 QUANTUM ARCADE
             </h1>
-            <div class="flex space-x-4">
+            <div class="flex space-x-2 sm:space-x-4">
+                <!-- REDUCED PADDING AND TEXT SIZE ON MOBILE -->
                 <button id="signupBtn" onclick="handleSignup()"
-                    class="bg-primary-neon text-dark-bg font-bold py-2 px-6 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-white shadow-lg shadow-primary-neon/50 hidden sm:block">
+                    class="bg-primary-neon text-dark-bg text-sm sm:text-base font-bold py-2 px-4 sm:px-6 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-white shadow-lg shadow-primary-neon/50 hidden sm:block">
                     Sign Up
                 </button>
+                <!-- REDUCED PADDING AND TEXT SIZE ON MOBILE -->
                 <button id="loginBtn" onclick="handleLogin()"
-                    class="bg-secondary-glow text-dark-bg font-bold py-2 px-6 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-white shadow-lg shadow-secondary-glow/50">
+                    class="bg-secondary-glow text-dark-bg text-sm sm:text-base font-bold py-2 px-4 sm:px-6 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-white shadow-lg shadow-secondary-glow/50">
                     Log In
                 </button>
             </div>
@@ -199,17 +205,18 @@
 
     <script>
         // --- CONFIGURATION ---
-        // Updated API URL to the one you provided
+        // Your Google Sheets Apps Script URL for JSONP access
         const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbw1cUoQmamxty2mEAzob1SH8O7GYrYaEw0RBEOEBN-i5ItzY31cA7ZVCVSXChydTLreKw/exec'; 
         
         // --- MOCK DATA (Fallback/Loading State) ---
+        // Changed to use the correct data structure and provide more images for the 3-column layout
         const mockGamesData = [
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x250/1e3a8a/ffffff?text=Fetching+Data", gameUrl: "#" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x250/4c0519/ffffff?text=Fetching+Data", gameUrl: "#" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x250/065f46/ffffff?text=Fetching+Data", gameUrl: "#" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x250/7e22ce/ffffff?text=Fetching+Data", gameUrl: "#" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x250/b45309/ffffff?text=Fetching+Data", gameUrl: "#" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x250/be123c/ffffff?text=Fetching+Data", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/1e3a8a/ffffff?text=Loading", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/4c0519/ffffff?text=Loading", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/065f46/ffffff?text=Loading", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/7e22ce/ffffff?text=Loading", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/b45309/ffffff?text=Loading", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/be123c/ffffff?text=Loading", gameUrl: "#" },
         ];
 
 
@@ -231,7 +238,6 @@
             document.getElementById(`tab-${tabName}`).classList.add('active');
 
             // NOTE: In a real app, you would filter or fetch data specific to the 'player' or 'agent' categories here.
-            // For now, we will simply re-render the same data to show the functional tabs.
             renderGameCards(allGameData); 
         }
 
@@ -240,9 +246,10 @@
 
         /**
          * Global callback function to receive data from the JSONP API.
+         * This function runs automatically when the script tag successfully executes.
          */
         function handleGamesData(data) {
-            console.log('JSONP Callback received data.');
+            console.log('JSONP Callback received data. Data length:', data ? data.length : 0);
             
             if (Array.isArray(data) && data.length > 0) {
                 // Filter out any potential empty or placeholder rows
@@ -251,14 +258,14 @@
                 if (gameData.length > 0) {
                     allGameData = gameData;
                     renderGameCards(allGameData);
-                    alertMessage(`Successfully loaded ${gameData.length} games.`, 'success');
+                    // REMOVED: alertMessage(`Successfully loaded ${gameData.length} games.`, 'success');
                 } else {
-                    renderGameCards([{ gameName: "No Games Found", gameImageUrl: "https://placehold.co/400x250/252f43/ffffff?text=No+Data", gameUrl: "#" }]);
-                    alertMessage("Google Sheet returned empty or invalid data.", 'error');
+                    renderGameCards(mockGamesData); // Show mock data if API returns empty
+                    alertMessage("Google Sheet returned empty or invalid data. Check sheet contents.", 'error');
                 }
             } else {
-                renderGameCards([{ gameName: "No Games Found", gameImageUrl: "https://placehold.co/400x250/252f43/ffffff?text=No+Data", gameUrl: "#" }]);
-                alertMessage("Google Sheet returned empty or invalid data.", 'error');
+                renderGameCards(mockGamesData); // Show mock data if API failed or returned non-array
+                alertMessage("Failed to load games data. Check your Google Sheet content and Apps Script deployment.", 'error');
             }
         }
 
@@ -278,7 +285,6 @@
             }
 
             // Construct the JSONP URL
-            // The JSONP callback name must match the global function name defined above (handleGamesData)
             const scriptUrl = `${GOOGLE_SHEET_API_URL}?callback=handleGamesData`;
             
             // Create a new script element
@@ -389,4 +395,102 @@
          * @param {string} url - The URL of the game website.
          */
         function openGame(url) {
-            console.log(`Opening game: ${url}`)
+            console.log(`Opening game: ${url}`);
+            window.open(url, '_blank');
+        }
+
+        /**
+         * Creates and displays the game cards.
+         * @param {Array<Object>} games - Array of game objects.
+         */
+        function renderGameCards(games) {
+            const gameGrid = document.getElementById('gameGrid');
+            gameGrid.innerHTML = ''; // Clear previous content
+
+            games.forEach(game => {
+                const card = document.createElement('div');
+                // Flex column ensures image and text stack correctly
+                card.className = 'glass-card rounded-xl cursor-pointer group flex flex-col justify-between'; 
+                card.setAttribute('onclick', `openGame('${game.gameUrl}')`);
+
+                // Image Container
+                const imgContainer = document.createElement('div');
+                // Ensure image takes full width but has minimal padding for the aesthetic
+                imgContainer.className = 'w-full flex justify-center items-center p-1'; 
+
+                // Image Element - object-contain ensures the whole image fits without cropping
+                const img = document.createElement('img');
+                img.src = game.gameImageUrl;
+                img.alt = `Cover art for ${game.gameName}`;
+                // Removed fixed height, letting the image size the card height
+                img.className = 'w-full object-contain rounded-lg transition duration-300 transform group-hover:scale-[1.03]'; 
+                img.onerror = function() {
+                    this.onerror=null;
+                    this.src='https://placehold.co/400x400/1f2937/ffffff?text=Image+Missing';
+                    this.className = 'w-full object-contain rounded-lg'; 
+                };
+
+                // Content Element (Game Name Link Style)
+                const content = document.createElement('div');
+                // Centered text, small font, minimal vertical padding
+                content.className = 'px-1 py-1 text-center'; 
+
+                const name = document.createElement('h3');
+                name.textContent = game.gameName;
+                // Text styling to match the linked-text look
+                name.className = 'text-xs font-medium text-white underline transition duration-200'; 
+                
+                // Assemble the card
+                content.appendChild(name);
+                imgContainer.appendChild(img);
+                card.appendChild(imgContainer); 
+                card.appendChild(content); 
+                gameGrid.appendChild(card);
+            });
+        }
+
+        // --- Custom Alert/Modal for Gaming UI (Kept unchanged) ---
+
+        /**
+         * Displays a non-intrusive, custom message box instead of alert().
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success' or 'error'.
+         */
+        function alertMessage(message, type = 'info') {
+            let messageBox = document.getElementById('messageBox');
+            if (!messageBox) {
+                messageBox = document.createElement('div');
+                messageBox.id = 'messageBox';
+                messageBox.className = 'fixed top-4 right-4 z-50 transition-transform duration-500 ease-out transform translate-x-full';
+                document.body.appendChild(messageBox);
+            }
+
+            const alertDiv = document.createElement('div');
+            const color = type === 'success' ? 'bg-primary-neon text-dark-bg' : 'bg-red-600 text-white';
+            alertDiv.className = `p-4 rounded-lg shadow-2xl mb-3 max-w-sm w-full ${color} transform transition duration-500 hover:scale-105`;
+            alertDiv.innerHTML = `<p class="font-bold">${message}</p>`;
+
+            // Add the new alert and make it visible
+            messageBox.prepend(alertDiv);
+            messageBox.classList.remove('translate-x-full');
+            messageBox.style.transform = 'translateX(0)';
+
+            // Auto-hide the alert
+            setTimeout(() => {
+                alertDiv.remove();
+                if (messageBox.children.length === 0) {
+                    messageBox.classList.add('translate-x-full');
+                    messageBox.style.transform = 'translateX(100%)';
+                }
+            }, 5000);
+        }
+
+        // --- Initialization on Load ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchGamesFromGoogleSheet(); // Start fetching data on load
+            setActiveTab('player'); // Set the initial tab view
+        });
+    </script>
+</body>
+</html>
