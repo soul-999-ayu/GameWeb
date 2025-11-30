@@ -101,6 +101,8 @@
             /* Remove the default underline look */
             text-decoration: none; 
         }
+        
+        /* Removed .modal-card-center as we are switching back to Tailwind flex centering for fixed elements */
     </style>
 </head>
 <body class="font-sans text-white h-full m-0 p-0">
@@ -143,9 +145,10 @@
     </div>
 
     <!-- GET IN CHOICE MODAL -->
+    <!-- Re-added w-full h-full to modal backdrop container and overflow-y-auto for internal scrolling -->
     <div id="getInChoiceModal" onclick="closeModalOutside(event, 'getInChoiceModal', 'choiceCard')"
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none">
-        <div id="choiceCard" class="glass-card rounded-2xl p-8 w-11/12 max-w-sm transform scale-90 transition-all duration-300 border-2 border-secondary-glow/30 text-center">
+        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none w-full h-full overflow-y-auto">
+        <div id="choiceCard" class="glass-card rounded-2xl p-8 w-11/12 max-w-sm transform scale-90 transition-all duration-300 border-2 border-secondary-glow/30 text-center m-auto">
             <h2 class="text-3xl font-bold text-secondary-glow uppercase mb-6">WELCOME</h2>
             <p class="text-gray-300 mb-8">Choose your access path.</p>
 
@@ -162,9 +165,11 @@
     </div>
 
 
-    <!-- Login Modal Structure --><div id="loginModal" onclick="closeModalOutside(event, 'loginModal', 'loginCard')"
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none">
-        <div id="loginCard" class="glass-card rounded-2xl p-8 w-11/12 max-w-md transform scale-90 transition-all duration-300 border-2 border-secondary-glow/30">
+    <!-- Login Modal Structure -->
+    <!-- Re-added w-full h-full to modal backdrop container and overflow-y-auto for internal scrolling -->
+    <div id="loginModal" onclick="closeModalOutside(event, 'loginModal', 'loginCard')"
+        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none w-full h-full overflow-y-auto">
+        <div id="loginCard" class="glass-card rounded-2xl p-8 w-11/12 max-w-md transform scale-90 transition-all duration-300 border-2 border-secondary-glow/30 m-auto">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-3xl font-bold text-secondary-glow uppercase">ACCESS PROTOCOL</h2>
                 <button onclick="closeModal('loginModal', 'loginCard')" class="text-gray-400 hover:text-secondary-glow transition rounded-full p-1 hover:bg-secondary-glow/10">
@@ -194,9 +199,11 @@
         </div>
     </div>
 
-    <!-- Signup Modal Structure --><div id="signupModal" onclick="closeModalOutside(event, 'signupModal', 'signupCard')"
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none">
-        <div id="signupCard" class="glass-card rounded-2xl p-8 w-11/12 max-w-md transform scale-90 transition-all duration-300 border-2 border-primary-neon/30">
+    <!-- Signup Modal Structure -->
+    <!-- Re-added w-full h-full to modal backdrop container and overflow-y-auto for internal scrolling -->
+    <div id="signupModal" onclick="closeModalOutside(event, 'signupModal', 'signupCard')"
+        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none w-full h-full overflow-y-auto">
+        <div id="signupCard" class="glass-card rounded-2xl p-8 w-11/12 max-w-md transform scale-90 transition-all duration-300 border-2 border-primary-neon/30 m-auto">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-3xl font-bold text-primary-neon uppercase">CREATE ACCOUNT</h2>
                 <button onclick="closeModal('signupModal', 'signupCard')" class="text-gray-400 hover:text-primary-neon transition rounded-full p-1 hover:bg-primary-neon/10">
@@ -235,17 +242,18 @@
     <script>
         // --- CONFIGURATION ---
         // Your Google Sheets Apps Script URL for JSONP access
-        const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbw1cUoQmamxty2mEAzob1SH8O7GYrYaEw0RBEOEBN-i5ItzY31cA7ZVCVSXChydTLreKw/exec'; 
+        // UPDATED URL
+        const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycby0vNldimpBm2zc8oSzqK682wNf0ZSgwzxA7H6fFOcgpHxA5G7byE2WLENLUTyAEy0OMA/exec'; 
         
         // --- MOCK DATA (Fallback/Loading State) ---
         // Changed to use the correct data structure and provide more images for the 3-column layout
         const mockGamesData = [
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/1e3a8a/ffffff?text=Loading", gameUrl: "#" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/4c0519/ffffff?text=Loading", gameUrl: "#" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/065f46/ffffff?text=Loading", gameUrl: "#" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/7e22ce/ffffff?text=Loading", gameUrl: "#" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/b45309/ffffff?text=Loading", gameUrl: "#" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/be123c/ffffff?text=Loading", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/1e3a8a/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/4c0519/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/065f46/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/7e22ce/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/b45309/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/be123c/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
         ];
 
 
@@ -281,8 +289,13 @@
             console.log('JSONP Callback received data. Data length:', data ? data.length : 0);
             
             if (Array.isArray(data) && data.length > 0) {
-                // Filter out any potential empty or placeholder rows
-                const gameData = data.filter(row => row.gameName && row.gameName.trim() !== ''); 
+                // Filter out games that are empty and games that are explicitly set to be invisible.
+                const gameData = data.filter(row => 
+                    row.gameName && 
+                    row.gameName.trim() !== '' &&
+                    // Added check for visibility. Checks if the field is set to 'TRUE' (case insensitive).
+                    (String(row.visibility).toUpperCase() === 'TRUE')
+                ); 
                 
                 if (gameData.length > 0) {
                     allGameData = gameData;
@@ -326,9 +339,10 @@
         // --- Generic Modal Functions ---
 
         /**
-         * Opens the modal by removing classes and applying scale-100.
+         * Opens the modal by removing classes, applying scale-100, and disabling body scroll.
          */
         function openModal(modalId, cardId) {
+            document.body.classList.add('overflow-hidden'); // Disable body scrolling
             const modal = document.getElementById(modalId);
             const card = document.getElementById(cardId);
 
@@ -339,9 +353,10 @@
         }
 
         /**
-         * Closes the modal by applying classes and scale-90.
+         * Closes the modal by applying classes, scale-90, and enabling body scroll.
          */
         function closeModal(modalId, cardId) {
+            document.body.classList.remove('overflow-hidden'); // Enable body scrolling
             const modal = document.getElementById(modalId);
             const card = document.getElementById(cardId);
 
@@ -367,7 +382,7 @@
         // --- Specific Auth/Modal Handlers ---
 
         /**
-         * Opens the choice modal. (FIXED: was missing)
+         * Opens the choice modal.
          */
         function handleGetIn() {
              openModal('getInChoiceModal', 'choiceCard');
