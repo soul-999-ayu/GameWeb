@@ -87,6 +87,20 @@
             border-bottom-color: #ffc400; 
             box-shadow: 0 2px 5px rgba(255, 196, 0, 0.5);
         }
+        
+        /* New style for game names to make them "pop" */
+        .game-title-pop {
+            /* INCREASED text size from 0.875rem (text-sm) to approx 1.3rem (text-lg) */
+            font-size: 1.3rem;
+            /* Add a yellow/gold text shadow/glow */
+            text-shadow: 0 0 5px rgba(255, 196, 0, 0.8);
+            /* Set color to match the active tab color */
+            color: #ffc400; 
+            /* Ensure it is block level for better centering */
+            display: block; 
+            /* Remove the default underline look */
+            text-decoration: none; 
+        }
     </style>
 </head>
 <body class="font-sans text-white h-full m-0 p-0">
@@ -98,15 +112,10 @@
                 QUANTUM ARCADE
             </h1>
             <div class="flex space-x-2 sm:space-x-4">
-                <!-- REDUCED PADDING AND TEXT SIZE ON MOBILE -->
-                <button id="signupBtn" onclick="handleSignup()"
-                    class="bg-primary-neon text-dark-bg text-sm sm:text-base font-bold py-2 px-4 sm:px-6 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-white shadow-lg shadow-primary-neon/50 hidden sm:block">
-                    Sign Up
-                </button>
-                <!-- REDUCED PADDING AND TEXT SIZE ON MOBILE -->
-                <button id="loginBtn" onclick="handleLogin()"
+                <!-- CONSOLIDATED BUTTON: "GET IN" -->
+                <button id="getInBtn" onclick="handleGetIn()"
                     class="bg-secondary-glow text-dark-bg text-sm sm:text-base font-bold py-2 px-4 sm:px-6 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-white shadow-lg shadow-secondary-glow/50">
-                    Log In
+                    GET IN
                 </button>
             </div>
         </header>
@@ -132,6 +141,26 @@
             <p>&copy; 2025 Quantum Arcade. Game data simulated.</p>
         </footer>
     </div>
+
+    <!-- GET IN CHOICE MODAL -->
+    <div id="getInChoiceModal" onclick="closeModalOutside(event, 'getInChoiceModal', 'choiceCard')"
+        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none">
+        <div id="choiceCard" class="glass-card rounded-2xl p-8 w-11/12 max-w-sm transform scale-90 transition-all duration-300 border-2 border-secondary-glow/30 text-center">
+            <h2 class="text-3xl font-bold text-secondary-glow uppercase mb-6">WELCOME</h2>
+            <p class="text-gray-300 mb-8">Choose your access path.</p>
+
+            <button onclick="closeModal('getInChoiceModal', 'choiceCard'); handleLogin()"
+                class="w-full bg-secondary-glow text-dark-bg font-bold py-3 mb-4 rounded-lg transition duration-300 transform hover:scale-[1.02] hover:bg-white shadow-xl shadow-secondary-glow/50 tracking-wider text-lg uppercase">
+                LOG IN
+            </button>
+            
+            <button onclick="closeModal('getInChoiceModal', 'choiceCard'); handleSignup()"
+                class="w-full bg-primary-neon text-dark-bg font-bold py-3 rounded-lg transition duration-300 transform hover:scale-[1.02] hover:bg-white shadow-xl shadow-primary-neon/50 tracking-wider text-lg uppercase">
+                SIGN UP
+            </button>
+        </div>
+    </div>
+
 
     <!-- Login Modal Structure --><div id="loginModal" onclick="closeModalOutside(event, 'loginModal', 'loginCard')"
         class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none">
@@ -258,7 +287,6 @@
                 if (gameData.length > 0) {
                     allGameData = gameData;
                     renderGameCards(allGameData);
-                    // REMOVED: alertMessage(`Successfully loaded ${gameData.length} games.`, 'success');
                 } else {
                     renderGameCards(mockGamesData); // Show mock data if API returns empty
                     alertMessage("Google Sheet returned empty or invalid data. Check sheet contents.", 'error');
@@ -295,10 +323,10 @@
             document.head.appendChild(script);
         }
 
-        // --- Generic Modal Functions (Kept unchanged) ---
+        // --- Generic Modal Functions ---
 
         /**
-         * Generic function to open a modal with animation.
+         * Opens the modal by removing classes and applying scale-100.
          */
         function openModal(modalId, cardId) {
             const modal = document.getElementById(modalId);
@@ -311,7 +339,7 @@
         }
 
         /**
-         * Generic function to close a modal with animation.
+         * Closes the modal by applying classes and scale-90.
          */
         function closeModal(modalId, cardId) {
             const modal = document.getElementById(modalId);
@@ -329,9 +357,6 @@
 
         /**
          * Closes the modal if the click target is the modal backdrop itself.
-         * @param {Event} event - The click event.
-         * @param {string} modalId - ID of the modal wrapper.
-         * @param {string} cardId - ID of the modal content card.
          */
         function closeModalOutside(event, modalId, cardId) {
             if (event.target.id === modalId) {
@@ -339,12 +364,25 @@
             }
         }
 
-        // --- Specific Auth/Modal Handlers (Kept unchanged) ---
+        // --- Specific Auth/Modal Handlers ---
 
+        /**
+         * Opens the choice modal. (FIXED: was missing)
+         */
+        function handleGetIn() {
+             openModal('getInChoiceModal', 'choiceCard');
+        }
+        
+        /**
+         * Opens the login modal directly.
+         */
         function handleLogin() {
             openModal('loginModal', 'loginCard');
         }
 
+        /**
+         * Opens the signup modal directly.
+         */
         function handleSignup() {
             openModal('signupModal', 'signupCard');
         }
@@ -415,19 +453,19 @@
 
                 // Image Container
                 const imgContainer = document.createElement('div');
-                // Ensure image takes full width but has minimal padding for the aesthetic
-                imgContainer.className = 'w-full flex justify-center items-center p-1'; 
+                // Height is fixed relative to the card size. Added `overflow-hidden` for cropping.
+                imgContainer.className = 'w-full flex justify-center items-center h-28 sm:h-36 overflow-hidden'; 
 
-                // Image Element - object-contain ensures the whole image fits without cropping
+                // Image Element - object-cover forces the image to fill the container (cropping if necessary)
                 const img = document.createElement('img');
                 img.src = game.gameImageUrl;
                 img.alt = `Cover art for ${game.gameName}`;
-                // Removed fixed height, letting the image size the card height
-                img.className = 'w-full object-contain rounded-lg transition duration-300 transform group-hover:scale-[1.03]'; 
+                // Changed object-contain to object-cover to force filling and zooming/cropping
+                img.className = 'w-full h-full object-cover transition duration-300 transform group-hover:scale-[1.05]'; 
                 img.onerror = function() {
                     this.onerror=null;
                     this.src='https://placehold.co/400x400/1f2937/ffffff?text=Image+Missing';
-                    this.className = 'w-full object-contain rounded-lg'; 
+                    this.className = 'w-full h-full object-cover'; 
                 };
 
                 // Content Element (Game Name Link Style)
@@ -437,8 +475,8 @@
 
                 const name = document.createElement('h3');
                 name.textContent = game.gameName;
-                // Text styling to match the linked-text look
-                name.className = 'text-xs font-medium text-white underline transition duration-200'; 
+                // NEW CLASS APPLIED: Removed underline and text-xs, added custom glow styling
+                name.className = 'game-title-pop font-medium transition duration-200'; 
                 
                 // Assemble the card
                 content.appendChild(name);
