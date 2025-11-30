@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full"> <!-- Added h-full to the html element -->
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,15 +23,9 @@
                             '0%, 100%': { filter: 'drop-shadow(0 0 4px #4ade80)' },
                             '50%': { filter: 'drop-shadow(0 0 8px #00ffff)' }, /* Updated to Cyan */
                         },
-                        'gradient-shift': {
-                            '0%': { backgroundPosition: '0% 50%' },
-                            '50%': { backgroundPosition: '100% 50%' },
-                            '100%': { backgroundPosition: '0% 50%' },
-                        }
                     },
                     animation: {
                         'pulse-glow': 'glow 3s infinite ease-in-out',
-                        'bg-shift': 'gradient-shift 20s ease infinite', /* Slightly slower animation */
                     }
                 }
             }
@@ -54,41 +48,45 @@
             box-shadow: 0 12px 40px 0 rgba(0, 255, 255, 0.3); /* Stronger glow on hover */
         }
 
-        /* Set the background image with blur */
+        /* Set the background image with blur - Fixes white borders on scroll */
         body {
-            /* Fix for background responsiveness: ensures the background covers the entire body height */
+            /* Ensures background covers entire scrollable area */
             background: url('resources/images/background/bg.png') no-repeat center center;
             background-size: cover;
-            background-attachment: fixed; /* Keep background fixed relative to the viewport for a scrolling effect */
-            min-height: 100vh; /* Ensure full viewport height */
+            background-attachment: fixed; /* Ensures background stays fixed while content scrolls */
+            min-height: 100vh;
             
             /* Apply a *subtle* blur to the overall background to keep content readable */
             -webkit-backdrop-filter: blur(3px); 
             backdrop-filter: blur(3px);
-            background-color: #0A001C; /* Fallback color in case image doesn't load */
+            background-color: #0A001C; 
             
-            /* Crucial for fixing white margins/borders: */
+            /* Removes default browser margins/padding */
             margin: 0;
             padding: 0;
             width: 100vw;
         }
-        
-        /* Ensure the main container wraps all content and extends the body height */
-        #app {
-            min-height: 100vh;
+
+        /* Style for the tab buttons to match the reference image's look */
+        .tab-button {
+            position: relative;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 0.75rem 2.5rem;
+            color: #ccc;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
         }
-        
-        /* Custom image container height to control card size better */
-        .game-image-container {
-            width: 100%;
-            /* Use padding-top for a responsive 16:9 aspect ratio or similar, 
-               but here we'll let it be flexible based on image and content padding */
-            padding-bottom: 0; /* Remove potential unwanted space */
+
+        .tab-button.active {
+            color: #ffc400; /* Yellow accent color for active state */
+            border-bottom-color: #ffc400; 
+            box-shadow: 0 2px 5px rgba(255, 196, 0, 0.5);
         }
-        
     </style>
 </head>
-<body class="font-sans text-white h-full m-0 p-0"> <!-- Added m-0 p-0 classes -->
+<body class="font-sans text-white h-full m-0 p-0">
 
     <div id="app" class="p-4 md:p-8">
         <!-- Header & Navigation --><header class="flex justify-between items-center mb-12 glass-card rounded-xl p-4 md:p-6 sticky top-0 z-10">
@@ -108,9 +106,20 @@
         </header>
 
         <!-- Main Content Grid --><main class="max-w-7xl mx-auto">
-            <h2 class="text-3xl font-bold mb-8 text-white uppercase tracking-wide border-b border-secondary-glow/50 pb-2">Featured Games</h2>
-            <div id="gameGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                <!-- Game cards will be injected here by JavaScript --></div>
+            <h2 class="text-3xl font-bold mb-8 text-white uppercase tracking-wide border-b border-secondary-glow/50 pb-2 hidden sm:block">Featured Games</h2>
+            
+            <!-- Tabbed Navigation Structure -->
+            <div class="flex justify-center mb-8 border-b border-white/10">
+                <div class="flex space-x-4">
+                    <div id="tab-player" class="tab-button active" onclick="setActiveTab('player')">Player Link</div>
+                    <div id="tab-agent" class="tab-button" onclick="setActiveTab('agent')">Agent Link</div>
+                </div>
+            </div>
+
+            <!-- Game Grid: 3 columns on mobile, 4+ on desktop -->
+            <div id="gameGrid" class="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
+                <!-- Game cards will be injected here by JavaScript -->
+            </div>
         </main>
 
         <!-- Footer - NO blur applied --><footer class="mt-20 pt-8 border-t border-secondary-glow/20 text-center text-gray-400">
@@ -190,20 +199,41 @@
 
     <script>
         // --- CONFIGURATION ---
-        // Placeholder API URL - MUST be replaced with your deployed Apps Script URL
+        // Updated API URL to the one you provided
         const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbw1cUoQmamxty2mEAzob1SH8O7GYrYaEw0RBEOEBN-i5ItzY31cA7ZVCVSXChydTLreKw/exec'; 
         
         // --- MOCK DATA (Fallback/Loading State) ---
         const mockGamesData = [
-            { gameName: "Loading Data...", gameImageUrl: "https://placehold.co/400x250/1e3a8a/ffffff?text=Fetching+Data", gameUrl: "#" },
-            { gameName: "Loading Data...", gameImageUrl: "https://placehold.co/400x250/4c0519/ffffff?text=Fetching+Data", gameUrl: "#" },
-            { gameName: "Loading Data...", gameImageUrl: "https://placehold.co/400x250/065f46/ffffff?text=Fetching+Data", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x250/1e3a8a/ffffff?text=Fetching+Data", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x250/4c0519/ffffff?text=Fetching+Data", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x250/065f46/ffffff?text=Fetching+Data", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x250/7e22ce/ffffff?text=Fetching+Data", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x250/b45309/ffffff?text=Fetching+Data", gameUrl: "#" },
+            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x250/be123c/ffffff?text=Fetching+Data", gameUrl: "#" },
         ];
 
 
         // --- FIREBASE/APP CONFIG (Kept for completeness) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+        let allGameData = [];
+        let activeTab = 'player'; // Default active tab
+
+        // --- TAB FUNCTIONALITY ---
+        
+        function setActiveTab(tabName) {
+            activeTab = tabName;
+            
+            // Highlight the active tab
+            document.getElementById('tab-player').classList.remove('active');
+            document.getElementById('tab-agent').classList.remove('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            // NOTE: In a real app, you would filter or fetch data specific to the 'player' or 'agent' categories here.
+            // For now, we will simply re-render the same data to show the functional tabs.
+            renderGameCards(allGameData); 
+        }
 
 
         // --- DATA FETCHING LOGIC (JSONP Implementation) ---
@@ -215,10 +245,12 @@
             console.log('JSONP Callback received data.');
             
             if (Array.isArray(data) && data.length > 0) {
+                // Filter out any potential empty or placeholder rows
                 const gameData = data.filter(row => row.gameName && row.gameName.trim() !== ''); 
                 
                 if (gameData.length > 0) {
-                    renderGameCards(gameData);
+                    allGameData = gameData;
+                    renderGameCards(allGameData);
                     alertMessage(`Successfully loaded ${gameData.length} games.`, 'success');
                 } else {
                     renderGameCards([{ gameName: "No Games Found", gameImageUrl: "https://placehold.co/400x250/252f43/ffffff?text=No+Data", gameUrl: "#" }]);
@@ -246,6 +278,7 @@
             }
 
             // Construct the JSONP URL
+            // The JSONP callback name must match the global function name defined above (handleGamesData)
             const scriptUrl = `${GOOGLE_SHEET_API_URL}?callback=handleGamesData`;
             
             // Create a new script element
@@ -356,101 +389,4 @@
          * @param {string} url - The URL of the game website.
          */
         function openGame(url) {
-            console.log(`Opening game: ${url}`);
-            window.open(url, '_blank');
-        }
-
-        /**
-         * Creates and displays the game cards.
-         * @param {Array<Object>} games - Array of game objects.
-         */
-        function renderGameCards(games) {
-            const gameGrid = document.getElementById('gameGrid');
-            gameGrid.innerHTML = ''; // Clear previous content
-
-            games.forEach(game => {
-                const card = document.createElement('div');
-                // Removed overflow-hidden to ensure the image container is flexible
-                card.className = 'glass-card rounded-xl cursor-pointer group flex flex-col'; 
-                card.setAttribute('onclick', `openGame('${game.gameUrl}')`);
-
-                // Image Container - Used to manage image sizing flexibly
-                const imgContainer = document.createElement('div');
-                // Added p-0 and pb-0 to remove default padding that creates space
-                imgContainer.className = 'w-full flex justify-center items-center p-0 pb-0'; 
-
-                // Image Element - Set image width to fit container fully, object-contain to prevent cropping
-                const img = document.createElement('img');
-                img.src = game.gameImageUrl;
-                img.alt = `Cover art for ${game.gameName}`;
-                // Removed max-h-48, allowing height to be flexible based on image aspect ratio
-                img.className = 'w-full object-contain rounded-t-xl transition duration-300 transform group-hover:scale-[1.03]'; 
-                img.onerror = function() {
-                    // Fallback in case image URL is broken
-                    this.onerror=null;
-                    this.src='https://placehold.co/400x250/1f2937/ffffff?text=Image+Missing';
-                    this.className = 'w-full h-40 object-cover rounded-t-xl'; // Use fixed height for placeholder
-                };
-
-                // Content Element (restored to normal structure)
-                const content = document.createElement('div');
-                // Reduced padding to py-2 (from p-4) to minimize space below image
-                content.className = 'px-4 py-2 mt-auto'; 
-
-                const name = document.createElement('h3');
-                name.textContent = game.gameName;
-                name.className = 'text-xl font-semibold text-primary-neon group-hover:text-white transition duration-200'; 
-                
-                // Assemble the card
-                content.appendChild(name);
-                imgContainer.appendChild(img); // Image inside container
-                card.appendChild(imgContainer); // Container inside card
-                card.appendChild(content); 
-                gameGrid.appendChild(card);
-            });
-        }
-
-        // --- Custom Alert/Modal for Gaming UI (Kept unchanged) ---
-
-        /**
-         * Displays a non-intrusive, custom message box instead of alert().
-         * @param {string} message - The message to display.
-         * @param {string} type - 'success' or 'error'.
-         */
-        function alertMessage(message, type = 'info') {
-            let messageBox = document.getElementById('messageBox');
-            if (!messageBox) {
-                messageBox = document.createElement('div');
-                messageBox.id = 'messageBox';
-                messageBox.className = 'fixed top-4 right-4 z-50 transition-transform duration-500 ease-out transform translate-x-full';
-                document.body.appendChild(messageBox);
-            }
-
-            const alertDiv = document.createElement('div');
-            const color = type === 'success' ? 'bg-primary-neon text-dark-bg' : 'bg-red-600 text-white';
-            alertDiv.className = `p-4 rounded-lg shadow-2xl mb-3 max-w-sm w-full ${color} transform transition duration-500 hover:scale-105`;
-            alertDiv.innerHTML = `<p class="font-bold">${message}</p>`;
-
-            // Add the new alert and make it visible
-            messageBox.prepend(alertDiv);
-            messageBox.classList.remove('translate-x-full');
-            messageBox.style.transform = 'translateX(0)';
-
-            // Auto-hide the alert
-            setTimeout(() => {
-                alertDiv.remove();
-                if (messageBox.children.length === 0) {
-                    messageBox.classList.add('translate-x-full');
-                    messageBox.style.transform = 'translateX(100%)';
-                }
-            }, 5000);
-        }
-
-        // --- Initialization on Load ---
-
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchGamesFromGoogleSheet(); // Start fetching data on load
-        });
-    </script>
-</body>
-</html>
+            console.log(`Opening game: ${url}`)
