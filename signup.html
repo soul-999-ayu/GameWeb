@@ -128,9 +128,7 @@
     </div>
 
     <script>
-        // *** CONFIGURATION: REPLACE THIS WITH YOUR DEPLOYED APPS SCRIPT URL ***
-        // Ensure this is the SAME URL you used in login.html
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2Mk09Bvg-jCqfYviEgxSMEnqRjUT8cvFlu4XWZWotZn7CgVEQSyDvRCAu2wufJ3Vz/exec'; 
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxUmAfhmeqR0-rhD1U0YdlrhXCNE560O6x6N-C5Ve2suKq6wzk3OOhs2MaPI3B9qJqHDQ/exec';
 
         const form = document.getElementById('signupForm');
         const submitBtn = document.getElementById('submitBtn');
@@ -144,23 +142,19 @@
             const email = document.getElementById('signup-email').value.trim();
             const password = document.getElementById('signup-password').value;
             
-            // Error Elements
             const usernameError = document.getElementById('username-error');
             const emailError = document.getElementById('email-error');
             const passwordError = document.getElementById('password-error');
 
-            // 1. Reset All Errors
             usernameError.classList.add('hidden');
             emailError.classList.add('hidden');
             passwordError.classList.add('hidden');
             
-            // 2. Basic Empty Check
             if (!fullname || !username || !email || !password) {
                 alertMessage("Please fill in all fields.", 'error');
                 return;
             }
 
-            // 3. Strict Password Validation
             const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
             
             if (!strongPasswordRegex.test(password)) {
@@ -169,21 +163,19 @@
                 return;
             }
 
-            // 4. Set Loading State
             submitBtn.disabled = true;
             btnText.textContent = "PROCESSING...";
             submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
 
-            // 5. Send Data
             const payload = {
-                action: 'signup', // *** FIXED: ADDED ACTION TYPE ***
+                action: 'signup',
                 fullname: fullname,
                 username: username,
                 email: email,
                 password: password
             };
 
-            fetch(APPS_SCRIPT_URL, {
+            fetch(API_URL, {
                 method: "POST",
                 body: JSON.stringify(payload)
             })

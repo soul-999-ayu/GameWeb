@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quantum Arcade - Gaming Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     
     <script>
         tailwind.config = {
@@ -34,7 +35,6 @@
     </script>
     <style>
         /* --- SCROLL FIX: Background Layer --- */
-        /* Keeps background fixed so it doesn't break position:fixed elements */
         #background-layer {
             position: fixed;
             top: 0;
@@ -42,10 +42,8 @@
             width: 100vw;
             height: 100vh;
             z-index: -1; 
-            
             background: url('resources/images/background/bg.png') no-repeat center center;
             background-size: cover;
-            
             -webkit-backdrop-filter: blur(3px); 
             backdrop-filter: blur(3px);
             background-color: rgba(0, 0, 0, 0.75); 
@@ -127,10 +125,10 @@
             transform: scale(1.1);
         }
         
-        /* Social container positioning */
+        /* SOCIAL CONTAINER POSITIONING */
         #social-buttons-container {
             position: fixed;
-            bottom: 1rem; /* 16px approx */
+            bottom: 20px;
             right: 25px;  /* Exact requested margin */
             z-index: 50;
             display: flex;
@@ -143,17 +141,18 @@
 
     <div id="background-layer"></div>
 
-    <div id="app" class="p-4 md:p-8 relative z-0">
+    <div id="app" class="p-4 md:p-8 relative z-0 min-h-screen flex flex-col">
         <header class="flex justify-between items-center mb-12 glass-card rounded-xl p-4 md:p-6 sticky top-0 z-10">
             <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary-neon animate-pulse-glow tracking-wider uppercase">
                 QUANTUM ARCADE
             </h1>
             
             <div id="auth-area" class="flex space-x-2 sm:space-x-4 items-center">
-                </div>
+                <!-- Auth content injected via JS -->
+            </div>
         </header>
 
-        <main class="max-w-7xl mx-auto">
+        <main class="max-w-7xl mx-auto flex-grow w-full">
             <h2 class="text-3xl font-bold mb-8 text-white uppercase tracking-wide border-b border-secondary-glow/50 pb-2 hidden sm:block">Featured Games</h2>
             
             <div class="flex justify-center mb-8 border-b border-white/10">
@@ -164,7 +163,8 @@
             </div>
 
             <div id="gameGrid" class="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
-                </div>
+                <!-- Game cards injected via JS -->
+            </div>
         </main>
 
         <footer class="mt-20 pt-8 border-t border-secondary-glow/20 text-center text-gray-400">
@@ -172,26 +172,42 @@
         </footer>
     </div>
 
+    <!-- Floating Icons Container -->
     <div id="social-buttons-container">
+        <!-- Icons injected here by JS -->
+    </div>
+
+    <!-- NEW: LOGOUT MODAL -->
+    <div id="logoutModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 transition-all duration-300">
+        <div class="glass-card p-8 rounded-xl w-80 text-center border-2 border-primary-neon/30 transform scale-100">
+            <div class="w-16 h-16 mx-auto bg-primary-neon/20 rounded-full flex items-center justify-center mb-4 border border-primary-neon">
+                <i class="fa-solid fa-user text-3xl text-primary-neon"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-1">Signed In</h3>
+            <p class="text-gray-400 text-sm mb-6" id="logoutModalUsername">User</p>
+            
+            <button onclick="performLogout()" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg mb-3 hover:bg-red-700 transition shadow-lg shadow-red-600/30">
+                LOG OUT
+            </button>
+            <button onclick="closeLogoutModal()" class="w-full bg-white/10 text-gray-300 font-bold py-3 rounded-lg hover:bg-white/20 transition">
+                CANCEL
+            </button>
         </div>
+    </div>
 
     <script>
-        // --- CONFIGURATION ---
-        const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycby0vNldimpBm2zc8oSzqK682wNf0ZSgwzxA7H6fFOcgpHxA5G7byE2WLENLUTyAEy0OMA/exec'; 
-        const SOCIAL_LINKS_API_URL = 'https://script.google.com/macros/s/AKfycbxyqGz2f1sDsxKxRp5tYe1mfnfnvoJBMDDAhMpk4juOpNIuvXZA5OQKkxnW4lLGsgmqLQ/exec'; 
+        // *** MASTER API URL ***
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxUmAfhmeqR0-rhD1U0YdlrhXCNE560O6x6N-C5Ve2suKq6wzk3OOhs2MaPI3B9qJqHDQ/exec';
         const LOGIN_PAGE_URL = 'login.html';
         
-        // --- MOCK DATA (Only for Games Fallback) ---
+        // *** PASTE YOUR USER ICON URL HERE ***
+        // Example: 'https://i.imgur.com/myIcon.png'
+        const USER_ICON_URL = ''; 
+
+        // Fallback Data (Only shown if API connection completely fails)
         const mockGamesData = [
-            { gameName: "Loading...", gameImageUrl: "https://placehold.co/400x400/1e3a8a/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
-            { gameName: "Loading...", gameImageUrl: "https://placehold.co/400x400/4c0519/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
-            { gameName: "Loading...", gameImageUrl: "https://placehold.co/400x400/065f46/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
+            { gameName: "Loading...", gameImageUrl: "https://placehold.co/400x400/1e3a8a/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" }
         ];
-        
-        // --- NO MOCK SOCIAL DATA ---
-        // Intentionally empty to prevent "ghost" icons if connection fails. 
-        // We only want what is strictly in the sheet.
-        const mockSocialData = []; 
 
         let allGameData = [];
         let activeTab = 'player'; 
@@ -203,36 +219,50 @@
             const username = localStorage.getItem('Username');
             
             if (loggedIn && username) {
+                // Determine Icon to display
+                let iconHtml;
+                if (USER_ICON_URL && USER_ICON_URL.trim() !== '') {
+                    iconHtml = `<img src="${USER_ICON_URL}" class="w-full h-full object-cover rounded-full" alt="User">`;
+                } else {
+                    // Default SVG Icon
+                    iconHtml = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-neon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>`;
+                }
+
                 authArea.innerHTML = `
-                    <div class="flex items-center space-x-3 cursor-pointer group" onclick="handleProfileClick()">
-                        <div class="p-2 bg-primary-neon/20 rounded-full border border-primary-neon transition duration-200 group-hover:bg-primary-neon/40">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-neon" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                            </svg>
+                    <div class="flex items-center space-x-3 cursor-pointer group" onclick="openLogoutModal()">
+                        <div class="w-10 h-10 p-1 bg-primary-neon/20 rounded-full border border-primary-neon transition duration-200 group-hover:bg-primary-neon/40 flex items-center justify-center overflow-hidden">
+                             ${iconHtml}
                         </div>
                         <div class="hidden sm:block text-right">
                             <span class="text-sm font-bold text-secondary-glow leading-none block">${username}</span>
                             <span class="text-xs text-gray-400 leading-none block">Online</span>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             } else {
                 authArea.innerHTML = `
-                    <button id="getInBtn" onclick="handleGetIn()"
+                    <button id="getInBtn" onclick="window.location.href='${LOGIN_PAGE_URL}'"
                         class="bg-secondary-glow text-dark-bg text-sm sm:text-base font-bold py-2 px-4 sm:px-6 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-white shadow-lg shadow-secondary-glow/50">
                         GET IN
-                    </button>
-                `;
+                    </button>`;
             }
         }
         
-        function handleProfileClick() {
-            if (confirm("Would you like to log out?")) {
-                localStorage.removeItem('LoggedIn');
-                localStorage.removeItem('Username');
-                localStorage.removeItem('Email');
-                window.location.reload(); 
-            }
+        // --- LOGOUT MODAL LOGIC ---
+        function openLogoutModal() {
+            const username = localStorage.getItem('Username') || 'User';
+            document.getElementById('logoutModalUsername').textContent = username;
+            document.getElementById('logoutModal').classList.remove('hidden');
+        }
+
+        function closeLogoutModal() {
+            document.getElementById('logoutModal').classList.add('hidden');
+        }
+
+        function performLogout() {
+            localStorage.removeItem('LoggedIn'); 
+            localStorage.removeItem('Username'); 
+            localStorage.removeItem('Email');
+            window.location.reload(); 
         }
 
         function handleGetIn() {
@@ -240,117 +270,67 @@
         }
 
         function setActiveTab(tabName) {
-            activeTab = tabName;
-            document.getElementById('tab-player').classList.remove('active');
-            document.getElementById('tab-agent').classList.remove('active');
+            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabName}`).classList.add('active');
             renderGameCards(allGameData); 
         }
 
-        // --- GAME DATA LOGIC ---
-        function handleGamesData(data) {
-            if (Array.isArray(data) && data.length > 0) {
-                const gameData = data.filter(row => 
-                    row.gameName && row.gameName.trim() !== '' && (String(row.visibility).toUpperCase() === 'TRUE')
-                ); 
-                if (gameData.length > 0) {
-                    allGameData = gameData;
-                    renderGameCards(allGameData);
-                } else {
-                    renderGameCards(mockGamesData); 
-                }
-            } else {
-                renderGameCards(mockGamesData);
-            }
-        }
-
+        // --- FETCH GAMES ---
         function fetchGamesFromGoogleSheet() {
-            const scriptUrl = `${GOOGLE_SHEET_API_URL}?callback=handleGamesData`;
             const script = document.createElement('script');
-            script.src = scriptUrl;
+            script.src = `${API_URL}?type=games&callback=handleGamesData`;
             document.head.appendChild(script);
         }
 
-        // --- SOCIAL LINKS LOGIC (Strict) ---
+        function handleGamesData(data) {
+            if (Array.isArray(data) && data.length > 0) {
+                const mappedGames = data.map(item => ({
+                    gameName: item["Game Name"] || item["gameName"],
+                    gameImageUrl: item["Game Image URL"] || item["gameImageUrl"],
+                    gameUrl: item["Game URL"] || item["gameUrl"],
+                    visibility: item["Visibility"] || item["visibility"]
+                })).filter(g => g.gameName && String(g.visibility).toUpperCase() === 'TRUE');
+                allGameData = mappedGames;
+                renderGameCards(allGameData);
+            } else { renderGameCards(mockGamesData); }
+        }
 
-        function getPropertyCaseInsensitive(obj, key) {
-            const lowerKey = key.toLowerCase();
-            for (const prop in obj) {
-                if (prop.toLowerCase() === lowerKey) return obj[prop];
-            }
-            return undefined;
+        // --- FETCH SOCIAL LINKS ---
+        function fetchSocialLinks() {
+            const script = document.createElement('script');
+            script.src = `${API_URL}?type=socials&callback=handleSocialLinksData`;
+            document.head.appendChild(script);
         }
 
         function handleSocialLinksData(data) {
-            console.log("Social Data Received:", data); 
             if (Array.isArray(data) && data.length > 0) {
                 const visibleLinks = data.filter(item => {
-                    const visibility = getPropertyCaseInsensitive(item, 'Visibility');
-                    // FIX: Added .trim() to handle accidental spaces in sheet cells
+                    const visibility = item["Visibility"] || item["visibility"];
                     return visibility && (String(visibility).trim().toUpperCase() === 'TRUE');
                 }).map(item => ({
-                    Platform: getPropertyCaseInsensitive(item, 'Platform'),
-                    URL: getPropertyCaseInsensitive(item, 'URL'),
-                    IconUrl: getPropertyCaseInsensitive(item, 'IconUrl') 
+                    Platform: item["Platform"] || item["platform"],
+                    URL: item["URL"] || item["url"],
+                    IconUrl: item["IconUrl"] || item["iconUrl"]
                 }));
                 renderSocialIcons(visibleLinks);
-            } else {
-                // If fetching failed, show NOTHING (no mock data)
-                console.warn("Failed to load social links or empty data. Showing nothing.");
-                renderSocialIcons([]);
-            }
-        }
-
-        function fetchSocialLinks() {
-            console.log("Fetching social links...");
-            const scriptUrl = `${SOCIAL_LINKS_API_URL}?callback=handleSocialLinksData`;
-            const script = document.createElement('script');
-            script.src = scriptUrl;
-            script.onerror = function() {
-                console.error("Social Script failed to load. Check API URL or Network.");
-                handleSocialLinksData([]); // Show nothing on error
-            };
-            document.head.appendChild(script);
+            } else { document.getElementById('social-buttons-container').innerHTML = ''; }
         }
 
         function renderSocialIcons(data) {
             const container = document.getElementById('social-buttons-container');
             container.innerHTML = '';
-            
             data.forEach(item => {
                 if (!item.URL) return;
-                
-                const platform = (item.Platform || 'link').toLowerCase();
                 const button = document.createElement('a');
-                
                 button.className = `floating-social-btn`; 
-                button.href = item.URL;
-                button.target = '_blank';
-                button.title = item.Platform;
-                
+                button.href = item.URL; button.target = '_blank'; button.title = item.Platform;
                 const img = document.createElement('img');
-                // Use IconUrl from sheet. Fallback ONLY if IconUrl cell is empty.
                 img.src = item.IconUrl || `https://placehold.co/48x48/333333/ffffff?text=${item.Platform.charAt(0)}`;
-                img.alt = platform;
-                
-                img.onerror = function() {
-                    this.style.display = 'none'; // Hide if image link is broken
-                };
-                
+                img.alt = item.Platform;
+                img.onerror = function() { this.style.display = 'none'; };
                 button.appendChild(img);
                 container.appendChild(button);
             });
-        }
-
-        // --- HELPER FUNCTIONS ---
-        function openGame(url) {
-            const loggedIn = localStorage.getItem('LoggedIn') === 'true';
-            if (loggedIn) {
-                window.open(url, '_blank');
-            } else {
-                alertMessage("Please log in to play!", 'error');
-                setTimeout(() => window.location.href = LOGIN_PAGE_URL, 1000); 
-            }
         }
 
         function renderGameCards(games) {
@@ -359,54 +339,21 @@
             games.forEach(game => {
                 const card = document.createElement('div');
                 card.className = 'glass-card rounded-xl cursor-pointer group flex flex-col justify-between'; 
-                card.setAttribute('onclick', `openGame('${game.gameUrl}')`);
-
-                const imgContainer = document.createElement('div');
-                imgContainer.className = 'w-full flex justify-center items-center h-28 sm:h-36 overflow-hidden'; 
-
-                const img = document.createElement('img');
-                img.src = game.gameImageUrl;
-                img.alt = game.gameName;
-                img.className = 'w-full h-full object-cover transition duration-300 transform group-hover:scale-[1.05]'; 
-                img.onerror = function() { this.src='https://placehold.co/400x400/1f2937/ffffff?text=Game'; };
-
-                const content = document.createElement('div');
-                content.className = 'px-1 py-1 text-center'; 
-
-                const name = document.createElement('h3');
-                name.textContent = game.gameName;
-                name.className = 'game-title-pop font-medium transition duration-200'; 
-                
-                content.appendChild(name);
-                imgContainer.appendChild(img);
-                card.appendChild(imgContainer); 
-                card.appendChild(content); 
+                // *** UPDATED: No Login Check Required ***
+                card.onclick = () => {
+                    window.open(game.gameUrl, '_blank');
+                };
+                card.innerHTML = `
+                    <div class="w-full flex justify-center items-center h-28 sm:h-36 overflow-hidden">
+                        <img src="${game.gameImageUrl}" alt="${game.gameName}" class="w-full h-full object-cover transition duration-300 transform group-hover:scale-[1.05]" onerror="this.src='https://placehold.co/400x400/1f2937/ffffff?text=Game'">
+                    </div>
+                    <div class="px-1 py-1 text-center"><h3 class="game-title-pop font-medium transition duration-200">${game.gameName}</h3></div>`;
                 gameGrid.appendChild(card);
             });
         }
 
         function alertMessage(message, type = 'info') {
-            let messageBox = document.getElementById('messageBox');
-            if (!messageBox) {
-                messageBox = document.createElement('div');
-                messageBox.id = 'messageBox';
-                messageBox.className = 'fixed top-4 right-4 z-50 transition-transform duration-500 ease-out transform translate-x-full';
-                document.body.appendChild(messageBox);
-            }
-            const alertDiv = document.createElement('div');
-            const color = type === 'success' ? 'bg-primary-neon text-dark-bg' : 'bg-red-600 text-white';
-            alertDiv.className = `p-4 rounded-lg shadow-2xl mb-3 max-w-sm w-full ${color} transform transition duration-500 hover:scale-105`;
-            alertDiv.innerHTML = `<p class="font-bold">${message}</p>`;
-            messageBox.prepend(alertDiv);
-            messageBox.classList.remove('translate-x-full');
-            messageBox.style.transform = 'translateX(0)';
-            setTimeout(() => {
-                alertDiv.remove();
-                if (messageBox.children.length === 0) {
-                    messageBox.classList.add('translate-x-full');
-                    messageBox.style.transform = 'translateX(100%)';
-                }
-            }, 5000);
+            alert(message);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
