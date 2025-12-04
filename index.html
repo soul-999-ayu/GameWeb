@@ -177,11 +177,13 @@
         <!-- Icons injected here by JS -->
     </div>
 
-    <!-- NEW: LOGOUT MODAL -->
+    <!-- LOGOUT MODAL -->
     <div id="logoutModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 transition-all duration-300">
         <div class="glass-card p-8 rounded-xl w-80 text-center border-2 border-primary-neon/30 transform scale-100">
-            <div class="w-16 h-16 mx-auto bg-primary-neon/20 rounded-full flex items-center justify-center mb-4 border border-primary-neon">
-                <i class="fa-solid fa-user text-3xl text-primary-neon"></i>
+            <div class="w-16 h-16 mx-auto bg-primary-neon/20 rounded-full flex items-center justify-center mb-4 border border-primary-neon overflow-hidden">
+                <!-- Icon will be injected dynamically if needed, or defaults to below if JS logic differs slightly -->
+                <img id="logoutModalIcon" src="" class="w-full h-full object-cover hidden">
+                <i id="logoutModalDefaultIcon" class="fa-solid fa-user text-3xl text-primary-neon"></i>
             </div>
             <h3 class="text-xl font-bold text-white mb-1">Signed In</h3>
             <p class="text-gray-400 text-sm mb-6" id="logoutModalUsername">User</p>
@@ -200,11 +202,10 @@
         const API_URL = 'https://script.google.com/macros/s/AKfycbxUmAfhmeqR0-rhD1U0YdlrhXCNE560O6x6N-C5Ve2suKq6wzk3OOhs2MaPI3B9qJqHDQ/exec';
         const LOGIN_PAGE_URL = 'login.html';
         
-        // *** PASTE YOUR USER ICON URL HERE ***
-        // Example: 'https://i.imgur.com/myIcon.png'
-        const USER_ICON_URL = ''; 
+        // *** UPDATED: USER ICON URL ***
+        const USER_ICON_URL = 'https://github.com/soul-999-ayu/GameWeb/blob/main/resources/images/other/gamer.png?raw=true'; 
 
-        // Fallback Data (Only shown if API connection completely fails)
+        // Fallback Data
         const mockGamesData = [
             { gameName: "Loading...", gameImageUrl: "https://placehold.co/400x400/1e3a8a/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" }
         ];
@@ -224,7 +225,6 @@
                 if (USER_ICON_URL && USER_ICON_URL.trim() !== '') {
                     iconHtml = `<img src="${USER_ICON_URL}" class="w-full h-full object-cover rounded-full" alt="User">`;
                 } else {
-                    // Default SVG Icon
                     iconHtml = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-neon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>`;
                 }
 
@@ -251,6 +251,20 @@
         function openLogoutModal() {
             const username = localStorage.getItem('Username') || 'User';
             document.getElementById('logoutModalUsername').textContent = username;
+            
+            // Update modal icon based on setting
+            const modalIconImg = document.getElementById('logoutModalIcon');
+            const modalDefaultIcon = document.getElementById('logoutModalDefaultIcon');
+            
+            if (USER_ICON_URL && USER_ICON_URL.trim() !== '') {
+                modalIconImg.src = USER_ICON_URL;
+                modalIconImg.classList.remove('hidden');
+                modalDefaultIcon.classList.add('hidden');
+            } else {
+                modalIconImg.classList.add('hidden');
+                modalDefaultIcon.classList.remove('hidden');
+            }
+
             document.getElementById('logoutModal').classList.remove('hidden');
         }
 
@@ -263,10 +277,6 @@
             localStorage.removeItem('Username'); 
             localStorage.removeItem('Email');
             window.location.reload(); 
-        }
-
-        function handleGetIn() {
-            window.location.href = LOGIN_PAGE_URL;
         }
 
         function setActiveTab(tabName) {
@@ -339,7 +349,7 @@
             games.forEach(game => {
                 const card = document.createElement('div');
                 card.className = 'glass-card rounded-xl cursor-pointer group flex flex-col justify-between'; 
-                // *** UPDATED: No Login Check Required ***
+                // *** No Login Check Required ***
                 card.onclick = () => {
                     window.open(game.gameUrl, '_blank');
                 };
@@ -352,15 +362,8 @@
             });
         }
 
-        function alertMessage(message, type = 'info') {
-            alert(message);
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
-            checkLoginStatus(); 
-            fetchGamesFromGoogleSheet();
-            fetchSocialLinks();
-            setActiveTab('player'); 
+            checkLoginStatus(); fetchGamesFromGoogleSheet(); fetchSocialLinks(); setActiveTab('player'); 
         });
     </script>
 </body>
