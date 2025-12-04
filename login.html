@@ -10,10 +10,10 @@
             theme: {
                 extend: {
                     colors: {
-                        'primary-neon': '#4ade80', // Green Neon
-                        'secondary-glow': '#00ffff', // Electric Cyan
-                        'dark-bg': '#0f172a', // Slate Blue Dark
-                        'card-bg': 'rgba(15, 23, 42, 0.8)', // Semi-transparent Slate 900, darker base
+                        'primary-neon': '#4ade80', 
+                        'secondary-glow': '#00ffff', 
+                        'dark-bg': '#0f172a', 
+                        'card-bg': 'rgba(15, 23, 42, 0.8)', 
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -32,7 +32,6 @@
         }
     </script>
     <style>
-        /* Custom styles for the "liquid glass" effect */
         .glass-card {
             background-color: var(--card-bg);
             backdrop-filter: blur(20px) saturate(180%);
@@ -42,30 +41,23 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* Set the background image with dark overlay and blur */
         body {
             background: url('resources/images/background/bg.png') no-repeat center center;
             background-size: cover;
             background-attachment: fixed;
             min-height: 100vh;
-            
             -webkit-backdrop-filter: blur(3px); 
             backdrop-filter: blur(3px);
-            
             background-color: rgba(0, 0, 0, 0.75); 
             background-blend-mode: multiply;
-            
             margin: 0;
             padding: 0;
             width: 100vw;
-            
-            /* Center the main content */
             display: flex; 
             flex-direction: column;
         }
         
         .auth-container {
-            /* Flex properties to center the form vertically and horizontally */
             flex-grow: 1;
             display: flex;
             align-items: center;
@@ -102,9 +94,9 @@
                         placeholder="Secure code">
                 </div>
                 
-                <button type="submit"
-                    class="w-full bg-secondary-glow text-dark-bg font-bold py-3 rounded-lg transition duration-300 transform hover:scale-[1.02] hover:bg-white shadow-xl shadow-secondary-glow/50 tracking-wider text-lg uppercase mb-4">
-                    INITIATE LOGIN
+                <button type="submit" id="submitBtn"
+                    class="w-full bg-secondary-glow text-dark-bg font-bold py-3 rounded-lg transition duration-300 transform hover:scale-[1.02] hover:bg-white shadow-xl shadow-secondary-glow/50 tracking-wider text-lg uppercase mb-4 flex justify-center items-center">
+                    <span>INITIATE LOGIN</span>
                 </button>
             </form>
             
@@ -118,12 +110,102 @@
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
+        // *** CONFIGURATION: USE THE SAME WEB APP URL AS SIGNUP ***
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2Mk09Bvg-jCqfYviEgxSMEnqRjUT8cvFlu4XWZWotZn7CgVEQSyDvRCAu2wufJ3Vz/exec'; 
+
+        const form = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = submitBtn.querySelector('span');
+
+        form.addEventListener('submit', function(event) {
             event.preventDefault();
-            // Implement your actual login logic (e.g., Firebase authentication) here.
-            alert('Login attempted! Redirecting to index.');
-            // On success: window.location.href = 'index.html';
+
+            const usernameInput = document.getElementById('login-username').value.trim();
+            const passwordInput = document.getElementById('login-password').value;
+
+            if (!usernameInput || !passwordInput) {
+                alertMessage("Please fill in all credentials.", 'error');
+                return;
+            }
+
+            // UI Loading State
+            submitBtn.disabled = true;
+            btnText.textContent = "VERIFYING...";
+            submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+
+            const payload = {
+                action: 'login', // Tells the script this is a login request
+                username: usernameInput,
+                password: passwordInput
+            };
+
+            fetch(APPS_SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.result === 'success') {
+                    // --- SUCCESS LOGIC ---
+                    
+                    // 1. Save to Local Storage
+                    localStorage.setItem('LoggedIn', 'true');
+                    localStorage.setItem('Username', data.username); // Use the username returned from sheet
+                    localStorage.setItem('Email', data.email);       // Use the email returned from sheet
+                    
+                    alertMessage("Access Granted. Redirecting...", 'success');
+                    
+                    // 2. Redirect
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+
+                } else {
+                    // --- FAILURE LOGIC ---
+                    alertMessage(data.message || "Login failed.", 'error');
+                    resetButton();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alertMessage("Connection error. Please try again.", 'error');
+                resetButton();
+            });
         });
+
+        function resetButton() {
+            submitBtn.disabled = false;
+            btnText.textContent = "INITIATE LOGIN";
+            submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
+
+        // Custom Alert System
+        function alertMessage(message, type = 'info') {
+            let messageBox = document.getElementById('messageBox');
+            if (!messageBox) {
+                messageBox = document.createElement('div');
+                messageBox.id = 'messageBox';
+                messageBox.className = 'fixed top-4 right-4 z-50 transition-transform duration-500 ease-out transform translate-x-full';
+                document.body.appendChild(messageBox);
+            }
+
+            const alertDiv = document.createElement('div');
+            const color = type === 'success' ? 'bg-primary-neon text-dark-bg' : 'bg-red-600 text-white';
+            alertDiv.className = `p-4 rounded-lg shadow-2xl mb-3 max-w-sm w-full ${color} transform transition duration-500 hover:scale-105`;
+            alertDiv.innerHTML = `<p class="font-bold">${message}</p>`;
+
+            messageBox.prepend(alertDiv);
+            messageBox.classList.remove('translate-x-full');
+            messageBox.style.transform = 'translateX(0)';
+
+            setTimeout(() => {
+                alertDiv.remove();
+                if (messageBox.children.length === 0) {
+                    messageBox.classList.add('translate-x-full');
+                    messageBox.style.transform = 'translateX(100%)';
+                }
+            }, 5000);
+        }
     </script>
 </body>
 </html>
