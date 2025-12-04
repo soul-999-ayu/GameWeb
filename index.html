@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quantum Arcade - Gaming Hub</title>
-    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
-    <!-- Configure Tailwind for custom theme and liquid glass effect --><script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'primary-neon': '#4ade80', // Green Neon
-                        'secondary-glow': '#00ffff', // Electric Cyan
-                        'dark-bg': '#0f172a', // Slate Blue Dark
-                        'card-bg': 'rgba(15, 23, 42, 0.8)', // Semi-transparent Slate 900, darker base
+                        'primary-neon': '#4ade80',
+                        'secondary-glow': '#00ffff',
+                        'dark-bg': '#0f172a',
+                        'card-bg': 'rgba(15, 23, 42, 0.8)',
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -21,7 +22,7 @@
                     keyframes: {
                         'glow': {
                             '0%, 100%': { filter: 'drop-shadow(0 0 4px #4ade80)' },
-                            '50%': { filter: 'drop-shadow(0 0 8px #00ffff)' }, /* Updated to Cyan */
+                            '50%': { filter: 'drop-shadow(0 0 8px #00ffff)' },
                         },
                     },
                     animation: {
@@ -32,45 +33,47 @@
         }
     </script>
     <style>
-        /* Custom styles for the "liquid glass" effect */
+        /* --- SCROLL FIX: Background Layer --- */
+        /* Keeps background fixed so it doesn't break position:fixed elements */
+        #background-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1; 
+            
+            background: url('resources/images/background/bg.png') no-repeat center center;
+            background-size: cover;
+            
+            -webkit-backdrop-filter: blur(3px); 
+            backdrop-filter: blur(3px);
+            background-color: rgba(0, 0, 0, 0.75); 
+            background-blend-mode: multiply;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+        }
+
         .glass-card {
             background-color: var(--card-bg);
-            /* Increased blur from 10px to 20px for better readability */
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 255, 255, 0.15); /* Subtle Cyan shadow for depth */
+            box-shadow: 0 8px 32px 0 rgba(0, 255, 255, 0.15); 
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .glass-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 40px 0 rgba(0, 255, 255, 0.3); /* Stronger glow on hover */
+            box-shadow: 0 12px 40px 0 rgba(0, 255, 255, 0.3); 
         }
 
-        /* Set the background image with dark overlay and blur */
-        body {
-            /* Ensures background covers entire scrollable area */
-            background: url('resources/images/background/bg.png') no-repeat center center;
-            background-size: cover;
-            background-attachment: fixed; /* Ensures background stays fixed while content scrolls */
-            min-height: 100vh;
-            
-            /* Apply a *subtle* blur to the overall background to keep content readable */
-            -webkit-backdrop-filter: blur(3px); 
-            backdrop-filter: blur(3px);
-            
-            /* Add a dark overlay (75% black) using background-color */
-            background-color: rgba(0, 0, 0, 0.75); 
-            background-blend-mode: multiply; /* Blends the black color with the background image */
-            
-            /* Removes default browser margins/padding */
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-        }
-
-        /* Style for the tab buttons to match the reference image's look */
         .tab-button {
             position: relative;
             font-weight: bold;
@@ -83,49 +86,76 @@
         }
 
         .tab-button.active {
-            color: #ffc400; /* Yellow accent color for active state */
+            color: #ffc400; 
             border-bottom-color: #ffc400; 
             box-shadow: 0 2px 5px rgba(255, 196, 0, 0.5);
         }
         
-        /* New style for game names to make them "pop" */
         .game-title-pop {
-            /* INCREASED text size from 0.875rem (text-sm) to approx 1.3rem (text-lg) */
             font-size: 1.3rem;
-            /* Add a yellow/gold text shadow/glow */
             text-shadow: 0 0 5px rgba(255, 196, 0, 0.8);
-            /* Set color to match the active tab color */
             color: #ffc400; 
-            /* Ensure it is block level for better centering */
             display: block; 
-            /* Remove the default underline look */
             text-decoration: none; 
         }
         
-        /* Removed .modal-card-center as we are switching back to Tailwind flex centering for fixed elements */
+        /* Floating Social Button Styles */
+        .floating-social-btn {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            margin-left: 12px; 
+            overflow: hidden; 
+            background-color: rgba(255, 255, 255, 0.1); 
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .floating-social-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+            display: block;
+        }
+
+        .floating-social-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Social container positioning */
+        #social-buttons-container {
+            position: fixed;
+            bottom: 1rem; /* 16px approx */
+            right: 25px;  /* Exact requested margin */
+            z-index: 50;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-end;
+        }
     </style>
 </head>
-<body class="font-sans text-white h-full m-0 p-0">
+<body class="font-sans text-white">
 
-    <div id="app" class="p-4 md:p-8">
-        <!-- Header & Navigation --><header class="flex justify-between items-center mb-12 glass-card rounded-xl p-4 md:p-6 sticky top-0 z-10">
-            <!-- REDUCED FONT SIZE ON MOBILE (default text-2xl) -->
+    <div id="background-layer"></div>
+
+    <div id="app" class="p-4 md:p-8 relative z-0">
+        <header class="flex justify-between items-center mb-12 glass-card rounded-xl p-4 md:p-6 sticky top-0 z-10">
             <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary-neon animate-pulse-glow tracking-wider uppercase">
                 QUANTUM ARCADE
             </h1>
-            <div class="flex space-x-2 sm:space-x-4">
-                <!-- CONSOLIDATED BUTTON: "GET IN" -->
-                <button id="getInBtn" onclick="handleGetIn()"
-                    class="bg-secondary-glow text-dark-bg text-sm sm:text-base font-bold py-2 px-4 sm:px-6 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-white shadow-lg shadow-secondary-glow/50">
-                    GET IN
-                </button>
-            </div>
+            
+            <div id="auth-area" class="flex space-x-2 sm:space-x-4 items-center">
+                </div>
         </header>
 
-        <!-- Main Content Grid --><main class="max-w-7xl mx-auto">
+        <main class="max-w-7xl mx-auto">
             <h2 class="text-3xl font-bold mb-8 text-white uppercase tracking-wide border-b border-secondary-glow/50 pb-2 hidden sm:block">Featured Games</h2>
             
-            <!-- Tabbed Navigation Structure -->
             <div class="flex justify-center mb-8 border-b border-white/10">
                 <div class="flex space-x-4">
                     <div id="tab-player" class="tab-button active" onclick="setActiveTab('player')">Player Link</div>
@@ -133,367 +163,220 @@
                 </div>
             </div>
 
-            <!-- Game Grid: 3 columns on mobile, 4+ on desktop -->
             <div id="gameGrid" class="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
-                <!-- Game cards will be injected here by JavaScript -->
-            </div>
+                </div>
         </main>
 
-        <!-- Footer - NO blur applied --><footer class="mt-20 pt-8 border-t border-secondary-glow/20 text-center text-gray-400">
+        <footer class="mt-20 pt-8 border-t border-secondary-glow/20 text-center text-gray-400">
             <p>&copy; 2025 Quantum Arcade. Game data simulated.</p>
         </footer>
     </div>
 
-    <!-- GET IN CHOICE MODAL -->
-    <!-- Re-added w-full h-full to modal backdrop container and overflow-y-auto for internal scrolling -->
-    <div id="getInChoiceModal" onclick="closeModalOutside(event, 'getInChoiceModal', 'choiceCard')"
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none w-full h-full overflow-y-auto">
-        <div id="choiceCard" class="glass-card rounded-2xl p-8 w-11/12 max-w-sm transform scale-90 transition-all duration-300 border-2 border-secondary-glow/30 text-center m-auto">
-            <h2 class="text-3xl font-bold text-secondary-glow uppercase mb-6">WELCOME</h2>
-            <p class="text-gray-300 mb-8">Choose your access path.</p>
-
-            <button onclick="closeModal('getInChoiceModal', 'choiceCard'); handleLogin()"
-                class="w-full bg-secondary-glow text-dark-bg font-bold py-3 mb-4 rounded-lg transition duration-300 transform hover:scale-[1.02] hover:bg-white shadow-xl shadow-secondary-glow/50 tracking-wider text-lg uppercase">
-                LOG IN
-            </button>
-            
-            <button onclick="closeModal('getInChoiceModal', 'choiceCard'); handleSignup()"
-                class="w-full bg-primary-neon text-dark-bg font-bold py-3 rounded-lg transition duration-300 transform hover:scale-[1.02] hover:bg-white shadow-xl shadow-primary-neon/50 tracking-wider text-lg uppercase">
-                SIGN UP
-            </button>
+    <div id="social-buttons-container">
         </div>
-    </div>
-
-
-    <!-- Login Modal Structure -->
-    <!-- Re-added w-full h-full to modal backdrop container and overflow-y-auto for internal scrolling -->
-    <div id="loginModal" onclick="closeModalOutside(event, 'loginModal', 'loginCard')"
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none w-full h-full overflow-y-auto">
-        <div id="loginCard" class="glass-card rounded-2xl p-8 w-11/12 max-w-md transform scale-90 transition-all duration-300 border-2 border-secondary-glow/30 m-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-secondary-glow uppercase">ACCESS PROTOCOL</h2>
-                <button onclick="closeModal('loginModal', 'loginCard')" class="text-gray-400 hover:text-secondary-glow transition rounded-full p-1 hover:bg-secondary-glow/10">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <form id="loginForm">
-                <div class="mb-4">
-                    <label for="login-username" class="block text-sm font-medium text-gray-300 mb-1">Username/Email</label>
-                    <input type="text" id="login-username" name="username" required
-                        class="w-full p-3 rounded-lg bg-white/10 border border-secondary-glow/50 focus:border-secondary-glow focus:ring-2 focus:ring-secondary-glow transition duration-200 text-white placeholder-gray-500"
-                        placeholder="Enter your handle or email">
-                </div>
-                <div class="mb-6">
-                    <label for="login-password" class="block text-sm font-medium text-gray-300 mb-1">Password</label>
-                    <input type="password" id="login-password" name="password" required
-                        class="w-full p-3 rounded-lg bg-white/10 border border-secondary-glow/50 focus:border-secondary-glow focus:ring-2 focus:ring-secondary-glow transition duration-200 text-white placeholder-gray-500"
-                        placeholder="Secure code">
-                </div>
-                <button type="submit" onclick="authenticateUser(event)"
-                    class="w-full bg-secondary-glow text-dark-bg font-bold py-3 rounded-lg transition duration-300 transform hover:scale-[1.02] hover:bg-white shadow-xl shadow-secondary-glow/50 tracking-wider text-lg uppercase">
-                    INITIATE LOGIN
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Signup Modal Structure -->
-    <!-- Re-added w-full h-full to modal backdrop container and overflow-y-auto for internal scrolling -->
-    <div id="signupModal" onclick="closeModalOutside(event, 'signupModal', 'signupCard')"
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 transition-all duration-300 opacity-0 pointer-events-none w-full h-full overflow-y-auto">
-        <div id="signupCard" class="glass-card rounded-2xl p-8 w-11/12 max-w-md transform scale-90 transition-all duration-300 border-2 border-primary-neon/30 m-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-primary-neon uppercase">CREATE ACCOUNT</h2>
-                <button onclick="closeModal('signupModal', 'signupCard')" class="text-gray-400 hover:text-primary-neon transition rounded-full p-1 hover:bg-primary-neon/10">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <form id="signupForm">
-                <div class="mb-4">
-                    <label for="signup-username" class="block text-sm font-medium text-gray-300 mb-1">Username</label>
-                    <input type="text" id="signup-username" name="username" required
-                        class="w-full p-3 rounded-lg bg-white/10 border border-primary-neon/50 focus:border-primary-neon focus:ring-2 focus:ring-primary-neon transition duration-200 text-white placeholder-gray-500"
-                        placeholder="Choose your battle tag">
-                </div>
-                <div class="mb-4">
-                    <label for="signup-email" class="block text-sm font-medium text-gray-300 mb-1">Email Address</label>
-                    <input type="email" id="signup-email" name="email" required
-                        class="w-full p-3 rounded-lg bg-white/10 border border-primary-neon/50 focus:border-primary-neon focus:ring-2 focus:ring-primary-neon transition duration-200 text-white placeholder-gray-500"
-                        placeholder="Enter a valid email">
-                </div>
-                <div class="mb-6">
-                    <label for="signup-password" class="block text-sm font-medium text-gray-300 mb-1">Password</label>
-                    <input type="password" id="signup-password" name="password" required
-                        class="w-full p-3 rounded-lg bg-white/10 border border-primary-neon/50 focus:border-primary-neon focus:ring-2 focus:ring-primary-neon transition duration-200 text-white placeholder-gray-500"
-                        placeholder="Create a secure password">
-                </div>
-                <button type="submit" onclick="registerUser(event)"
-                    class="w-full bg-primary-neon text-dark-bg font-bold py-3 rounded-lg transition duration-300 transform hover:scale-[1.02] hover:bg-white shadow-xl shadow-primary-neon/50 tracking-wider text-lg uppercase">
-                    REGISTER USER
-                </button>
-            </form>
-        </div>
-    </div>
 
     <script>
         // --- CONFIGURATION ---
-        // Your Google Sheets Apps Script URL for JSONP access
-        // UPDATED URL
         const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycby0vNldimpBm2zc8oSzqK682wNf0ZSgwzxA7H6fFOcgpHxA5G7byE2WLENLUTyAEy0OMA/exec'; 
+        const SOCIAL_LINKS_API_URL = 'https://script.google.com/macros/s/AKfycbxyqGz2f1sDsxKxRp5tYe1mfnfnvoJBMDDAhMpk4juOpNIuvXZA5OQKkxnW4lLGsgmqLQ/exec'; 
+        const LOGIN_PAGE_URL = 'login.html';
         
-        // --- MOCK DATA (Fallback/Loading State) ---
-        // Changed to use the correct data structure and provide more images for the 3-column layout
+        // --- MOCK DATA (Only for Games Fallback) ---
         const mockGamesData = [
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/1e3a8a/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/4c0519/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/065f46/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/7e22ce/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/b45309/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
-            { gameName: "Fetching Data", gameImageUrl: "https://placehold.co/400x400/be123c/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
+            { gameName: "Loading...", gameImageUrl: "https://placehold.co/400x400/1e3a8a/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
+            { gameName: "Loading...", gameImageUrl: "https://placehold.co/400x400/4c0519/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
+            { gameName: "Loading...", gameImageUrl: "https://placehold.co/400x400/065f46/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" },
         ];
-
-
-        // --- FIREBASE/APP CONFIG (Kept for completeness) ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        
+        // --- NO MOCK SOCIAL DATA ---
+        // Intentionally empty to prevent "ghost" icons if connection fails. 
+        // We only want what is strictly in the sheet.
+        const mockSocialData = []; 
 
         let allGameData = [];
-        let activeTab = 'player'; // Default active tab
+        let activeTab = 'player'; 
 
-        // --- TAB FUNCTIONALITY ---
+        // --- AUTH CHECK ---
+        function checkLoginStatus() {
+            const authArea = document.getElementById('auth-area');
+            const loggedIn = localStorage.getItem('LoggedIn') === 'true';
+            const username = localStorage.getItem('Username');
+            
+            if (loggedIn && username) {
+                authArea.innerHTML = `
+                    <div class="flex items-center space-x-3 cursor-pointer group" onclick="handleProfileClick()">
+                        <div class="p-2 bg-primary-neon/20 rounded-full border border-primary-neon transition duration-200 group-hover:bg-primary-neon/40">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-neon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="hidden sm:block text-right">
+                            <span class="text-sm font-bold text-secondary-glow leading-none block">${username}</span>
+                            <span class="text-xs text-gray-400 leading-none block">Online</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                authArea.innerHTML = `
+                    <button id="getInBtn" onclick="handleGetIn()"
+                        class="bg-secondary-glow text-dark-bg text-sm sm:text-base font-bold py-2 px-4 sm:px-6 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-white shadow-lg shadow-secondary-glow/50">
+                        GET IN
+                    </button>
+                `;
+            }
+        }
         
+        function handleProfileClick() {
+            if (confirm("Would you like to log out?")) {
+                localStorage.removeItem('LoggedIn');
+                localStorage.removeItem('Username');
+                localStorage.removeItem('Email');
+                window.location.reload(); 
+            }
+        }
+
+        function handleGetIn() {
+            window.location.href = LOGIN_PAGE_URL;
+        }
+
         function setActiveTab(tabName) {
             activeTab = tabName;
-            
-            // Highlight the active tab
             document.getElementById('tab-player').classList.remove('active');
             document.getElementById('tab-agent').classList.remove('active');
             document.getElementById(`tab-${tabName}`).classList.add('active');
-
-            // NOTE: In a real app, you would filter or fetch data specific to the 'player' or 'agent' categories here.
             renderGameCards(allGameData); 
         }
 
-
-        // --- DATA FETCHING LOGIC (JSONP Implementation) ---
-
-        /**
-         * Global callback function to receive data from the JSONP API.
-         * This function runs automatically when the script tag successfully executes.
-         */
+        // --- GAME DATA LOGIC ---
         function handleGamesData(data) {
-            console.log('JSONP Callback received data. Data length:', data ? data.length : 0);
-            
             if (Array.isArray(data) && data.length > 0) {
-                // Filter out games that are empty and games that are explicitly set to be invisible.
                 const gameData = data.filter(row => 
-                    row.gameName && 
-                    row.gameName.trim() !== '' &&
-                    // Added check for visibility. Checks if the field is set to 'TRUE' (case insensitive).
-                    (String(row.visibility).toUpperCase() === 'TRUE')
+                    row.gameName && row.gameName.trim() !== '' && (String(row.visibility).toUpperCase() === 'TRUE')
                 ); 
-                
                 if (gameData.length > 0) {
                     allGameData = gameData;
                     renderGameCards(allGameData);
                 } else {
-                    renderGameCards(mockGamesData); // Show mock data if API returns empty
-                    alertMessage("Google Sheet returned empty or invalid data. Check sheet contents.", 'error');
+                    renderGameCards(mockGamesData); 
                 }
             } else {
-                renderGameCards(mockGamesData); // Show mock data if API failed or returned non-array
-                alertMessage("Failed to load games data. Check your Google Sheet content and Apps Script deployment.", 'error');
+                renderGameCards(mockGamesData);
             }
         }
 
-        /**
-         * Fetches game data using the JSONP technique to bypass CORS.
-         */
         function fetchGamesFromGoogleSheet() {
-            console.log('Attempting to fetch game data using JSONP...');
-            
-            // Render loading state immediately
-            renderGameCards(mockGamesData);
-
-            if (GOOGLE_SHEET_API_URL.includes('YOUR_APPS_SCRIPT_WEB_APP_URL')) {
-                console.error("ERROR: Please replace 'YOUR_APPS_SCRIPT_WEB_APP_URL' with your deployed Apps Script URL.");
-                alertMessage("Configuration Error: Please deploy the Apps Script and update the URL in the code.", 'error');
-                return;
-            }
-
-            // Construct the JSONP URL
             const scriptUrl = `${GOOGLE_SHEET_API_URL}?callback=handleGamesData`;
-            
-            // Create a new script element
             const script = document.createElement('script');
             script.src = scriptUrl;
-            
-            // Append the script element to the document to execute the JSONP request
             document.head.appendChild(script);
         }
 
-        // --- Generic Modal Functions ---
+        // --- SOCIAL LINKS LOGIC (Strict) ---
 
-        /**
-         * Opens the modal by removing classes, applying scale-100, and disabling body scroll.
-         */
-        function openModal(modalId, cardId) {
-            document.body.classList.add('overflow-hidden'); // Disable body scrolling
-            const modal = document.getElementById(modalId);
-            const card = document.getElementById(cardId);
-
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            // Animate card in (scales up)
-            card.classList.remove('scale-90');
-            card.classList.add('scale-100');
+        function getPropertyCaseInsensitive(obj, key) {
+            const lowerKey = key.toLowerCase();
+            for (const prop in obj) {
+                if (prop.toLowerCase() === lowerKey) return obj[prop];
+            }
+            return undefined;
         }
 
-        /**
-         * Closes the modal by applying classes, scale-90, and enabling body scroll.
-         */
-        function closeModal(modalId, cardId) {
-            document.body.classList.remove('overflow-hidden'); // Enable body scrolling
-            const modal = document.getElementById(modalId);
-            const card = document.getElementById(cardId);
-
-            // Animate card out (scales down)
-            card.classList.remove('scale-100');
-            card.classList.add('scale-90');
-
-            // Hide modal background after transition
-            setTimeout(() => {
-                modal.classList.add('opacity-0', 'pointer-events-none');
-            }, 300); // Match CSS transition duration
-        }
-
-        /**
-         * Closes the modal if the click target is the modal backdrop itself.
-         */
-        function closeModalOutside(event, modalId, cardId) {
-            if (event.target.id === modalId) {
-                closeModal(modalId, cardId);
+        function handleSocialLinksData(data) {
+            console.log("Social Data Received:", data); 
+            if (Array.isArray(data) && data.length > 0) {
+                const visibleLinks = data.filter(item => {
+                    const visibility = getPropertyCaseInsensitive(item, 'Visibility');
+                    // FIX: Added .trim() to handle accidental spaces in sheet cells
+                    return visibility && (String(visibility).trim().toUpperCase() === 'TRUE');
+                }).map(item => ({
+                    Platform: getPropertyCaseInsensitive(item, 'Platform'),
+                    URL: getPropertyCaseInsensitive(item, 'URL'),
+                    IconUrl: getPropertyCaseInsensitive(item, 'IconUrl') 
+                }));
+                renderSocialIcons(visibleLinks);
+            } else {
+                // If fetching failed, show NOTHING (no mock data)
+                console.warn("Failed to load social links or empty data. Showing nothing.");
+                renderSocialIcons([]);
             }
         }
 
-        // --- Specific Auth/Modal Handlers ---
-
-        /**
-         * Opens the choice modal.
-         */
-        function handleGetIn() {
-             openModal('getInChoiceModal', 'choiceCard');
-        }
-        
-        /**
-         * Opens the login modal directly.
-         */
-        function handleLogin() {
-            openModal('loginModal', 'loginCard');
+        function fetchSocialLinks() {
+            console.log("Fetching social links...");
+            const scriptUrl = `${SOCIAL_LINKS_API_URL}?callback=handleSocialLinksData`;
+            const script = document.createElement('script');
+            script.src = scriptUrl;
+            script.onerror = function() {
+                console.error("Social Script failed to load. Check API URL or Network.");
+                handleSocialLinksData([]); // Show nothing on error
+            };
+            document.head.appendChild(script);
         }
 
-        /**
-         * Opens the signup modal directly.
-         */
-        function handleSignup() {
-            openModal('signupModal', 'signupCard');
-        }
-        
-        // Convenience functions for modal close buttons
-        function closeLoginModal() {
-            closeModal('loginModal', 'loginCard');
-        }
-
-        function closeSignupModal() {
-            closeModal('signupModal', 'signupCard');
-        }
-
-
-        /**
-         * Placeholder for login authentication logic.
-         */
-        function authenticateUser(event) {
-            event.preventDefault(); 
-            const username = document.getElementById('login-username').value;
+        function renderSocialIcons(data) {
+            const container = document.getElementById('social-buttons-container');
+            container.innerHTML = '';
             
-            // NOTE: Replace this with your Firebase signInWithEmailAndPassword/signInWithCustomToken logic
-            console.log(`Attempting login for user: ${username}`);
-            alertMessage(`Login initiated for ${username}. Authentication logic coming soon!`, 'success');
-
-            closeModal('loginModal', 'loginCard');
+            data.forEach(item => {
+                if (!item.URL) return;
+                
+                const platform = (item.Platform || 'link').toLowerCase();
+                const button = document.createElement('a');
+                
+                button.className = `floating-social-btn`; 
+                button.href = item.URL;
+                button.target = '_blank';
+                button.title = item.Platform;
+                
+                const img = document.createElement('img');
+                // Use IconUrl from sheet. Fallback ONLY if IconUrl cell is empty.
+                img.src = item.IconUrl || `https://placehold.co/48x48/333333/ffffff?text=${item.Platform.charAt(0)}`;
+                img.alt = platform;
+                
+                img.onerror = function() {
+                    this.style.display = 'none'; // Hide if image link is broken
+                };
+                
+                button.appendChild(img);
+                container.appendChild(button);
+            });
         }
-        
-        /**
-         * Placeholder for user registration logic.
-         */
-        function registerUser(event) {
-            event.preventDefault(); 
-            const username = document.getElementById('signup-username').value;
-            const email = document.getElementById('signup-email').value;
 
-            // NOTE: Replace this with your Firebase createUserWithEmailAndPassword logic
-            console.log(`Attempting registration for user: ${username} (${email})`);
-            alertMessage(`Registration initiated for ${username}. Account creation logic coming soon!`, 'success');
-
-            closeModal('signupModal', 'signupCard');
-        }
-
-        // --- Game Functions ---
-
-        /**
-         * Navigates to the game's external website.
-         * @param {string} url - The URL of the game website.
-         */
+        // --- HELPER FUNCTIONS ---
         function openGame(url) {
-            console.log(`Opening game: ${url}`);
-            window.open(url, '_blank');
+            const loggedIn = localStorage.getItem('LoggedIn') === 'true';
+            if (loggedIn) {
+                window.open(url, '_blank');
+            } else {
+                alertMessage("Please log in to play!", 'error');
+                setTimeout(() => window.location.href = LOGIN_PAGE_URL, 1000); 
+            }
         }
 
-        /**
-         * Creates and displays the game cards.
-         * @param {Array<Object>} games - Array of game objects.
-         */
         function renderGameCards(games) {
             const gameGrid = document.getElementById('gameGrid');
-            gameGrid.innerHTML = ''; // Clear previous content
-
+            gameGrid.innerHTML = '';
             games.forEach(game => {
                 const card = document.createElement('div');
-                // Flex column ensures image and text stack correctly
                 card.className = 'glass-card rounded-xl cursor-pointer group flex flex-col justify-between'; 
                 card.setAttribute('onclick', `openGame('${game.gameUrl}')`);
 
-                // Image Container
                 const imgContainer = document.createElement('div');
-                // Height is fixed relative to the card size. Added `overflow-hidden` for cropping.
                 imgContainer.className = 'w-full flex justify-center items-center h-28 sm:h-36 overflow-hidden'; 
 
-                // Image Element - object-cover forces the image to fill the container (cropping if necessary)
                 const img = document.createElement('img');
                 img.src = game.gameImageUrl;
-                img.alt = `Cover art for ${game.gameName}`;
-                // Changed object-contain to object-cover to force filling and zooming/cropping
+                img.alt = game.gameName;
                 img.className = 'w-full h-full object-cover transition duration-300 transform group-hover:scale-[1.05]'; 
-                img.onerror = function() {
-                    this.onerror=null;
-                    this.src='https://placehold.co/400x400/1f2937/ffffff?text=Image+Missing';
-                    this.className = 'w-full h-full object-cover'; 
-                };
+                img.onerror = function() { this.src='https://placehold.co/400x400/1f2937/ffffff?text=Game'; };
 
-                // Content Element (Game Name Link Style)
                 const content = document.createElement('div');
-                // Centered text, small font, minimal vertical padding
                 content.className = 'px-1 py-1 text-center'; 
 
                 const name = document.createElement('h3');
                 name.textContent = game.gameName;
-                // NEW CLASS APPLIED: Removed underline and text-xs, added custom glow styling
                 name.className = 'game-title-pop font-medium transition duration-200'; 
                 
-                // Assemble the card
                 content.appendChild(name);
                 imgContainer.appendChild(img);
                 card.appendChild(imgContainer); 
@@ -502,13 +385,6 @@
             });
         }
 
-        // --- Custom Alert/Modal for Gaming UI (Kept unchanged) ---
-
-        /**
-         * Displays a non-intrusive, custom message box instead of alert().
-         * @param {string} message - The message to display.
-         * @param {string} type - 'success' or 'error'.
-         */
         function alertMessage(message, type = 'info') {
             let messageBox = document.getElementById('messageBox');
             if (!messageBox) {
@@ -517,18 +393,13 @@
                 messageBox.className = 'fixed top-4 right-4 z-50 transition-transform duration-500 ease-out transform translate-x-full';
                 document.body.appendChild(messageBox);
             }
-
             const alertDiv = document.createElement('div');
             const color = type === 'success' ? 'bg-primary-neon text-dark-bg' : 'bg-red-600 text-white';
             alertDiv.className = `p-4 rounded-lg shadow-2xl mb-3 max-w-sm w-full ${color} transform transition duration-500 hover:scale-105`;
             alertDiv.innerHTML = `<p class="font-bold">${message}</p>`;
-
-            // Add the new alert and make it visible
             messageBox.prepend(alertDiv);
             messageBox.classList.remove('translate-x-full');
             messageBox.style.transform = 'translateX(0)';
-
-            // Auto-hide the alert
             setTimeout(() => {
                 alertDiv.remove();
                 if (messageBox.children.length === 0) {
@@ -538,11 +409,11 @@
             }, 5000);
         }
 
-        // --- Initialization on Load ---
-
         document.addEventListener('DOMContentLoaded', () => {
-            fetchGamesFromGoogleSheet(); // Start fetching data on load
-            setActiveTab('player'); // Set the initial tab view
+            checkLoginStatus(); 
+            fetchGamesFromGoogleSheet();
+            fetchSocialLinks();
+            setActiveTab('player'); 
         });
     </script>
 </body>
