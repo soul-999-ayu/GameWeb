@@ -7,7 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxUmAfhmeqR0-rhD1U0YdlrhXCNE560O6x6N-C5Ve2suKq6wzk3OOhs2MaPI3B9qJqHDQ/exec';
+        // *** REPLACE WITH YOUR DEPLOYED APPS SCRIPT URL ***
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxHKM0oYLwtg8egGXcxOHbK9LNQ0KylGi4LaNQMaB37jrtDEZSVqjDhePgo5p3IIUjguw/exec';
         
         tailwind.config = {
             theme: {
@@ -54,19 +55,28 @@
     <div id="dashboard-view" class="hidden flex-grow p-8 max-w-7xl mx-auto w-full relative z-0">
         
         <!-- NAV CARDS -->
-        <div id="nav-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 mt-10">
+        <div id="nav-cards" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 mt-10">
             <!-- GAMES CARD -->
             <div onclick="loadTable('games')" class="glass p-8 rounded-xl cursor-pointer hover:border-primary-neon transition text-center group border-t-4 border-transparent hover:scale-[1.02]">
                 <i class="fa-solid fa-gamepad text-5xl text-primary-neon mb-4"></i>
                 <h3 class="text-xl font-bold">GAMES</h3>
-                <p class="text-gray-400 text-sm mt-2">Manage game list and visibility</p>
+                <p class="text-gray-400 text-sm mt-2">Manage games, links & visibility</p>
             </div>
+            
+            <!-- SITE CONFIG CARD -->
+            <div onclick="loadTable('config')" class="glass p-8 rounded-xl cursor-pointer hover:border-yellow-400 transition text-center group border-t-4 border-transparent hover:scale-[1.02]">
+                <i class="fa-solid fa-gear text-5xl text-yellow-400 mb-4"></i>
+                <h3 class="text-xl font-bold">SITE CONFIG</h3>
+                <p class="text-gray-400 text-sm mt-2">Update Site Name & Link</p>
+            </div>
+
             <!-- SOCIALS CARD -->
             <div onclick="loadTable('socials')" class="glass p-8 rounded-xl cursor-pointer hover:border-secondary-glow transition text-center group border-t-4 border-transparent hover:scale-[1.02]">
                 <i class="fa-solid fa-share-nodes text-5xl text-secondary-glow mb-4"></i>
                 <h3 class="text-xl font-bold">SOCIALS</h3>
                 <p class="text-gray-400 text-sm mt-2">Update social links and icons</p>
             </div>
+            
             <!-- USERS CARD -->
             <div onclick="loadTable('users')" class="glass p-8 rounded-xl cursor-pointer hover:border-purple-500 transition text-center group border-t-4 border-transparent hover:scale-[1.02]">
                 <i class="fa-solid fa-users text-5xl text-purple-500 mb-4"></i>
@@ -95,7 +105,7 @@
 
     <!-- EDIT/ADD MODAL -->
     <div id="editor-modal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50">
-        <div class="glass p-8 rounded-xl w-full max-w-lg relative border border-gray-700">
+        <div class="glass p-8 rounded-xl w-full max-w-lg relative border border-gray-700 max-h-[90vh] overflow-y-auto">
             <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-times fa-lg"></i></button>
             <h2 id="modal-title" class="text-2xl font-bold mb-6 text-primary-neon">EDIT ITEM</h2>
             <form id="editor-form" class="space-y-4">
@@ -110,7 +120,7 @@
 
         // AUTHENTICATION
         function adminLogin() {
-            // Hardcoded password check
+            // Hardcoded password check - Replace with your secure logic if needed
             if(document.getElementById('admin-pass').value === "GameWeb") { 
                 sessionStorage.setItem('AdminAuth', 'true');
                 document.getElementById('login-view').classList.add('hidden');
@@ -138,8 +148,15 @@
             document.getElementById('table-body').innerHTML = '';
             document.getElementById('loading').classList.remove('hidden');
             
-            // Hide Add button for Users table (users usually register themselves)
-            document.getElementById('add-btn').style.display = (type === 'users') ? 'none' : 'block';
+            // Hide Add button for Users (read-only usually) and Config (single row usually)
+            if (type === 'users') {
+                 document.getElementById('add-btn').style.display = 'none';
+            } else if (type === 'config') {
+                 // Config usually has only 1 row, so we might hide Add if data exists, but kept visible for flexibility
+                 document.getElementById('add-btn').style.display = 'block'; 
+            } else {
+                 document.getElementById('add-btn').style.display = 'block';
+            }
 
             fetch(API_URL, {
                 method: 'POST',
@@ -168,6 +185,11 @@
             const thead = document.getElementById('table-head');
             const tbody = document.getElementById('table-body');
             
+            if (!rows || rows.length === 0) {
+                 tbody.innerHTML = '<tr><td class="p-4">No data found.</td></tr>';
+                 return;
+            }
+
             // Row 0 is always headers
             let headHtml = '<tr>';
             rows[0].forEach(header => headHtml += `<th class="p-4 border-b border-gray-700">${header}</th>`);
@@ -182,7 +204,7 @@
                 rows[i].forEach(cell => {
                     let text = String(cell);
                     // Truncate long text for display (like long URLs)
-                    if(text.length > 40) text = text.substring(0, 40) + '...';
+                    if(text.length > 30) text = text.substring(0, 30) + '...';
                     bodyHtml += `<td class="p-4">${text}</td>`;
                 });
                 
@@ -214,10 +236,26 @@
 
             headers.forEach((header, index) => {
                 const val = rowData ? rowData[index] : '';
-                form.innerHTML += `<div>
-                    <label class="block text-xs font-bold text-gray-400 mb-1 uppercase">${header}</label>
-                    <input type="text" id="input-${index}" value="${val}" class="w-full p-2 bg-black/40 border border-gray-600 rounded text-white text-sm focus:border-secondary-glow outline-none transition">
-                </div>`;
+                
+                // Customize input types based on header name for better UX
+                let inputType = 'text';
+                let extraAttrs = '';
+                
+                // Example: Visibility dropdown logic if needed, or specific fields
+                if (header.toLowerCase().includes('visibility')) {
+                     form.innerHTML += `<div>
+                        <label class="block text-xs font-bold text-gray-400 mb-1 uppercase">${header}</label>
+                        <select id="input-${index}" class="w-full p-2 bg-black/40 border border-gray-600 rounded text-white text-sm focus:border-secondary-glow outline-none transition">
+                            <option value="TRUE" ${val === 'TRUE' ? 'selected' : ''}>TRUE</option>
+                            <option value="FALSE" ${val === 'FALSE' ? 'selected' : ''}>FALSE</option>
+                        </select>
+                    </div>`;
+                } else {
+                    form.innerHTML += `<div>
+                        <label class="block text-xs font-bold text-gray-400 mb-1 uppercase">${header}</label>
+                        <input type="text" id="input-${index}" value="${val}" class="w-full p-2 bg-black/40 border border-gray-600 rounded text-white text-sm focus:border-secondary-glow outline-none transition">
+                    </div>`;
+                }
             });
             document.getElementById('editor-modal').classList.remove('hidden');
         }
@@ -229,13 +267,18 @@
             const headers = currentData[0];
             const newData = [];
             // Collect all input values
-            for(let i=0; i<headers.length; i++) newData.push(document.getElementById('input-'+i).value);
+            for(let i=0; i<headers.length; i++) {
+                const el = document.getElementById('input-'+i);
+                newData.push(el ? el.value : '');
+            }
 
             const btn = document.querySelector('#editor-modal button:last-child');
             btn.textContent = "SAVING..."; btn.disabled = true;
 
             fetch(API_URL, {
                 method: 'POST',
+                // 'text/plain' to avoid CORS preflight issues with some Apps Script configs
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify({ 
                     action: editingKey ? 'update_row' : 'add_row', 
                     type: currentType, 
@@ -252,6 +295,11 @@
                 } else {
                     alert("Error: " + data.message);
                 }
+            })
+            .catch(e => {
+                 console.error(e);
+                 alert("Save failed. Check console.");
+                 btn.textContent = "SAVE CHANGES"; btn.disabled = false;
             });
         }
 
@@ -261,13 +309,15 @@
             
             fetch(API_URL, { 
                 method: 'POST', 
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify({ action: 'delete_row', type: currentType, key: key }) 
             })
             .then(res => res.json())
             .then(data => { 
                 if(data.result === 'success') loadTable(currentType); 
                 else alert("Error: " + data.message); 
-            });
+            })
+            .catch(e => alert("Delete failed"));
         }
     </script>
 </body>

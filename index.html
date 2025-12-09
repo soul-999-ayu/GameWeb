@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Arcade - Gaming Hub</title>
+    <title> - Gaming Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     
@@ -12,52 +12,36 @@
             theme: {
                 extend: {
                     colors: {
-                        'primary-neon': '#4ade80',
-                        'secondary-glow': '#00ffff',
-                        'dark-bg': '#0f172a',
-                        'card-bg': 'rgba(15, 23, 42, 0.8)',
+                        'primary-neon': '#4ade80', // Green Neon
+                        'secondary-glow': '#00ffff', // Electric Cyan
+                        'dark-bg': '#0f172a', // Slate Blue Dark
+                        'card-bg': 'rgba(15, 23, 42, 0.8)', // Semi-transparent Slate 900
                     },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     keyframes: {
                         'glow': {
                             '0%, 100%': { filter: 'drop-shadow(0 0 4px #4ade80)' },
                             '50%': { filter: 'drop-shadow(0 0 8px #00ffff)' },
                         },
                     },
-                    animation: {
-                        'pulse-glow': 'glow 3s infinite ease-in-out',
-                    }
+                    animation: { 'pulse-glow': 'glow 3s infinite ease-in-out' }
                 }
             }
         }
     </script>
     <style>
-        /* --- SCROLL FIX: Background Layer --- */
+        /* BACKGROUND & SCROLL FIXES */
         #background-layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1; 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; 
             background: url('resources/images/background/bg.png') no-repeat center center;
             background-size: cover;
-            -webkit-backdrop-filter: blur(3px); 
-            backdrop-filter: blur(3px);
-            background-color: rgba(0, 0, 0, 0.75); 
-            background-blend-mode: multiply;
+            -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+            background-color: rgba(0, 0, 0, 0.75); background-blend-mode: multiply;
         }
 
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            width: 100vw;
-            overflow-x: hidden;
-        }
+        body { margin: 0; padding: 0; min-height: 100vh; width: 100vw; overflow-x: hidden; }
 
+        /* CARD STYLES */
         .glass-card {
             background-color: var(--card-bg);
             backdrop-filter: blur(20px) saturate(180%);
@@ -66,75 +50,35 @@
             box-shadow: 0 8px 32px 0 rgba(0, 255, 255, 0.15); 
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        .glass-card:hover { transform: translateY(-5px); box-shadow: 0 12px 40px 0 rgba(0, 255, 255, 0.3); }
 
-        .glass-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px 0 rgba(0, 255, 255, 0.3); 
-        }
-
+        /* TAB BUTTONS */
         .tab-button {
-            position: relative;
-            font-weight: bold;
-            text-transform: uppercase;
-            padding: 0.75rem 2.5rem;
-            color: #ccc;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-            cursor: pointer;
+            position: relative; font-weight: bold; text-transform: uppercase;
+            padding: 0.75rem 2.5rem; color: #ccc; border-bottom: 2px solid transparent;
+            transition: all 0.2s; cursor: pointer;
         }
-
         .tab-button.active {
-            color: #ffc400; 
-            border-bottom-color: #ffc400; 
+            color: #ffc400; border-bottom-color: #ffc400; 
             box-shadow: 0 2px 5px rgba(255, 196, 0, 0.5);
         }
         
+        /* GAME TEXT POP */
         .game-title-pop {
-            font-size: 1.3rem;
-            text-shadow: 0 0 5px rgba(255, 196, 0, 0.8);
-            color: #ffc400; 
-            display: block; 
-            text-decoration: none; 
+            font-size: 1.3rem; text-shadow: 0 0 5px rgba(255, 196, 0, 0.8);
+            color: #ffc400; display: block; text-decoration: none; 
         }
         
-        /* Floating Social Button Styles */
-        .floating-social-btn {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: transform 0.2s;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-            margin-left: 12px; 
-            overflow: hidden; 
-            background-color: rgba(255, 255, 255, 0.1); 
-            text-decoration: none;
-            cursor: pointer;
+        /* MODAL POSITIONING */
+        .modal-card-centered {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); z-index: 55;
         }
-        
-        .floating-social-btn img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; 
-            display: block;
+        .modal-backdrop {
+            position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.7);
+            z-index: 50; transition: opacity 0.3s; opacity: 0; pointer-events: none;
         }
-
-        .floating-social-btn:hover {
-            transform: scale(1.1);
-        }
-        
-        /* SOCIAL CONTAINER POSITIONING */
-        #social-buttons-container {
-            position: fixed;
-            bottom: 20px;
-            right: 25px;  /* Exact requested margin */
-            z-index: 50;
-            display: flex;
-            flex-direction: row;
-            align-items: flex-end;
-        }
+        .modal-backdrop.open { opacity: 1; pointer-events: auto; }
     </style>
 </head>
 <body class="font-sans text-white">
@@ -143,228 +87,361 @@
 
     <div id="app" class="p-4 md:p-8 relative z-0 min-h-screen flex flex-col">
         <header class="flex justify-between items-center mb-12 glass-card rounded-xl p-4 md:p-6 sticky top-0 z-10">
-            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary-neon animate-pulse-glow tracking-wider uppercase">
-                QUANTUM ARCADE
-            </h1>
+            <h1 id="siteTitle" class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary-neon animate-pulse-glow tracking-wider uppercase cursor-pointer" onclick="navigateTo('home')">
+                </h1>
             
-            <div id="auth-area" class="flex space-x-2 sm:space-x-4 items-center">
-                <!-- Auth content injected via JS -->
+            <div class="flex space-x-2 sm:space-x-4 items-center relative">
+                <button id="adminBtn" onclick="navigateTo('admin')" class="bg-red-500 text-white text-sm sm:text-base font-bold py-2 px-4 sm:px-6 rounded-lg hidden">ADMIN</button>
+                
+                <button id="getInBtn" onclick="handleGetIn()" class="bg-secondary-glow text-dark-bg text-sm sm:text-base font-bold py-2 px-4 sm:px-6 rounded-lg hover:scale-105 transition">GET IN</button>
+
+                <div id="userProfile" class="hidden flex flex-col items-center cursor-pointer relative z-50 ml-2" onclick="toggleLogoutMenu()">
+                    <img src="https://github.com/soul-999-ayu/GameWeb/blob/main/resources/images/other/gamer.png?raw=true" 
+                         alt="User" 
+                         class="w-10 h-10 rounded-full border-2 border-secondary-glow shadow-[0_0_10px_#00ffff] hover:scale-110 transition object-cover bg-black">
+                    <span id="displayUsername" class="text-[10px] sm:text-xs text-secondary-glow font-bold mt-1 tracking-wider uppercase max-w-[80px] truncate">User</span>
+                    
+                    <div id="logoutMenu" class="hidden absolute top-14 right-0 bg-dark-bg/95 backdrop-blur-md border border-secondary-glow/30 rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.5)] p-2 w-36 mt-2">
+                        <button onclick="handleLogout(event)" class="w-full text-left text-red-400 hover:text-red-300 hover:bg-white/10 font-bold text-sm py-2 px-3 rounded transition flex items-center">
+                            <i class="fa-solid fa-power-off mr-2"></i> LOGOUT
+                        </button>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto flex-grow w-full">
-            <h2 class="text-3xl font-bold mb-8 text-white uppercase tracking-wide border-b border-secondary-glow/50 pb-2 hidden sm:block">Featured Games</h2>
-            
-            <div class="flex justify-center mb-8 border-b border-white/10">
-                <div class="flex space-x-4">
-                    <div id="tab-player" class="tab-button active" onclick="setActiveTab('player')">Player Link</div>
-                    <div id="tab-agent" class="tab-button" onclick="setActiveTab('agent')">Agent Link</div>
-                </div>
-            </div>
-
-            <div id="gameGrid" class="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
-                <!-- Game cards injected via JS -->
-            </div>
-        </main>
+        <main id="mainContent" class="max-w-7xl mx-auto flex-grow w-full">
+            </main>
 
         <footer class="mt-20 pt-8 border-t border-secondary-glow/20 text-center text-gray-400">
-            <p>&copy; 2025 Quantum Arcade. Game data simulated.</p>
+            <p id="footer-copy">&copy; 2025 . Game data simulated.</p>
         </footer>
     </div>
 
-    <!-- Floating Icons Container -->
-    <div id="social-buttons-container">
-        <!-- Icons injected here by JS -->
+    <div id="modalBackdrop" class="modal-backdrop"></div>
+
+    <div id="getInChoiceModal" class="glass-card rounded-2xl p-8 w-11/12 max-w-sm transition-all duration-300 border-2 border-secondary-glow/30 text-center modal-card-centered scale-90" style="visibility: hidden;">
+        <h2 class="text-3xl font-bold text-secondary-glow uppercase mb-6">WELCOME</h2>
+        <button onclick="closeModal('getInChoiceModal'); openModal('loginModal')" class="w-full bg-secondary-glow text-dark-bg font-bold py-3 mb-4 rounded-lg hover:scale-[1.02] transition">LOG IN</button>
+        <button onclick="closeModal('getInChoiceModal'); openModal('signupModal')" class="w-full bg-primary-neon text-dark-bg font-bold py-3 rounded-lg hover:scale-[1.02] transition">SIGN UP</button>
     </div>
 
-    <!-- LOGOUT MODAL -->
-    <div id="logoutModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 transition-all duration-300">
-        <div class="glass-card p-8 rounded-xl w-80 text-center border-2 border-primary-neon/30 transform scale-100">
-            <div class="w-16 h-16 mx-auto bg-primary-neon/20 rounded-full flex items-center justify-center mb-4 border border-primary-neon overflow-hidden">
-                <!-- Icon will be injected dynamically if needed, or defaults to below if JS logic differs slightly -->
-                <img id="logoutModalIcon" src="" class="w-full h-full object-cover hidden">
-                <i id="logoutModalDefaultIcon" class="fa-solid fa-user text-3xl text-primary-neon"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white mb-1">Signed In</h3>
-            <p class="text-gray-400 text-sm mb-6" id="logoutModalUsername">User</p>
-            
-            <button onclick="performLogout()" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg mb-3 hover:bg-red-700 transition shadow-lg shadow-red-600/30">
-                LOG OUT
-            </button>
-            <button onclick="closeLogoutModal()" class="w-full bg-white/10 text-gray-300 font-bold py-3 rounded-lg hover:bg-white/20 transition">
-                CANCEL
-            </button>
+    <div id="loginModal" class="glass-card rounded-2xl p-8 w-11/12 max-w-md transition-all duration-300 border-2 border-secondary-glow/30 modal-card-centered scale-90" style="visibility: hidden;">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-secondary-glow uppercase">ACCESS</h2>
+            <button onclick="closeModal('loginModal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
         </div>
+        <form onsubmit="event.preventDefault(); handleUserAction('login')">
+            <input type="text" id="login-username" class="w-full p-3 mb-4 rounded-lg bg-white/10 border border-secondary-glow/50 text-white" placeholder="Username/Email" required>
+            <input type="password" id="login-password" class="w-full p-3 mb-6 rounded-lg bg-white/10 border border-secondary-glow/50 text-white" placeholder="Password" required>
+            <button type="submit" class="w-full bg-secondary-glow text-dark-bg font-bold py-3 rounded-lg hover:scale-[1.02] transition">LOGIN</button>
+        </form>
+    </div>
+
+    <div id="signupModal" class="glass-card rounded-2xl p-8 w-11/12 max-w-md transition-all duration-300 border-2 border-primary-neon/30 modal-card-centered scale-90" style="visibility: hidden;">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-primary-neon uppercase">CREATE</h2>
+            <button onclick="closeModal('signupModal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <form onsubmit="event.preventDefault(); handleUserAction('signup')">
+            <input type="text" id="signup-username" class="w-full p-3 mb-4 rounded-lg bg-white/10 border border-primary-neon/50 text-white" placeholder="Username" required>
+            <input type="password" id="signup-password" class="w-full p-3 mb-6 rounded-lg bg-white/10 border border-primary-neon/50 text-white" placeholder="Password" required>
+            <button type="submit" class="w-full bg-primary-neon text-dark-bg font-bold py-3 rounded-lg hover:scale-[1.02] transition">REGISTER</button>
+        </form>
     </div>
 
     <script>
-        // *** MASTER API URL ***
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxUmAfhmeqR0-rhD1U0YdlrhXCNE560O6x6N-C5Ve2suKq6wzk3OOhs2MaPI3B9qJqHDQ/exec';
-        const LOGIN_PAGE_URL = 'login.html';
-        
-        // *** UPDATED: USER ICON URL ***
-        const USER_ICON_URL = 'https://github.com/soul-999-ayu/GameWeb/blob/main/resources/images/other/gamer.png?raw=true'; 
+        // *** CONFIGURATION ***
+        const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbxHKM0oYLwtg8egGXcxOHbK9LNQ0KylGi4LaNQMaB37jrtDEZSVqjDhePgo5p3IIUjguw/exec'; 
 
-        // Fallback Data
+        // State
+        let allGameData = [];
+        let activeTab = 'player';
+        let siteConfig = { siteName: "", siteLink: "#" };
+        let userIsAdmin = false;
+
+        // Mock Data
         const mockGamesData = [
-            { gameName: "Loading...", gameImageUrl: "https://placehold.co/400x400/1e3a8a/ffffff?text=Loading", gameUrl: "#", visibility: "TRUE" }
+            { gameName: "Loading...", gameImageUrl: "https://placehold.co/400x400/1e3a8a/ffffff?text=Loading", playerUrl: "#", agentUrl: "#", visibility: "TRUE" },
+            { gameName: "Loading...", gameImageUrl: "https://placehold.co/400x400/4c0519/ffffff?text=Loading", playerUrl: "#", agentUrl: "#", visibility: "TRUE" },
+            { gameName: "Loading...", gameImageUrl: "https://placehold.co/400x400/065f46/ffffff?text=Loading", playerUrl: "#", agentUrl: "#", visibility: "TRUE" }
         ];
 
-        let allGameData = [];
-        let activeTab = 'player'; 
+        // *** DATA NORMALIZER ***
+        function normalizeGameData(rawGame) {
+            return {
+                gameName: rawGame.gameName || rawGame["Game Name"] || "Untitled",
+                gameImageUrl: rawGame.gameImageUrl || rawGame["Game Image URL"] || "",
+                playerUrl: rawGame.playerUrl || rawGame["Player URL"] || "#",
+                agentUrl: rawGame.agentUrl || rawGame["Agent URL"] || "#",
+                visibility: String(rawGame.visibility || rawGame["Visibility"] || "TRUE").toUpperCase()
+            };
+        }
 
-        // --- AUTH CHECK ---
-        function checkLoginStatus() {
-            const authArea = document.getElementById('auth-area');
-            const loggedIn = localStorage.getItem('LoggedIn') === 'true';
-            const username = localStorage.getItem('Username');
-            
-            if (loggedIn && username) {
-                // Determine Icon to display
-                let iconHtml;
-                if (USER_ICON_URL && USER_ICON_URL.trim() !== '') {
-                    iconHtml = `<img src="${USER_ICON_URL}" class="w-full h-full object-cover rounded-full" alt="User">`;
-                } else {
-                    iconHtml = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-neon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>`;
-                }
+        // *** 1. CORE RENDER FUNCTIONS ***
 
-                authArea.innerHTML = `
-                    <div class="flex items-center space-x-3 cursor-pointer group" onclick="openLogoutModal()">
-                        <div class="w-10 h-10 p-1 bg-primary-neon/20 rounded-full border border-primary-neon transition duration-200 group-hover:bg-primary-neon/40 flex items-center justify-center overflow-hidden">
-                             ${iconHtml}
-                        </div>
-                        <div class="hidden sm:block text-right">
-                            <span class="text-sm font-bold text-secondary-glow leading-none block">${username}</span>
-                            <span class="text-xs text-gray-400 leading-none block">Online</span>
-                        </div>
-                    </div>`;
-            } else {
-                authArea.innerHTML = `
-                    <button id="getInBtn" onclick="window.location.href='${LOGIN_PAGE_URL}'"
-                        class="bg-secondary-glow text-dark-bg text-sm sm:text-base font-bold py-2 px-4 sm:px-6 rounded-lg transition duration-300 transform hover:scale-105 hover:bg-white shadow-lg shadow-secondary-glow/50">
-                        GET IN
-                    </button>`;
+        window.setActiveTab = function(tabName) {
+            activeTab = tabName;
+            const pTab = document.getElementById('tab-player');
+            const aTab = document.getElementById('tab-agent');
+            if (pTab && aTab) {
+                pTab.classList.remove('active');
+                aTab.classList.remove('active');
+                document.getElementById(`tab-${tabName}`).classList.add('active');
             }
-        }
-        
-        // --- LOGOUT MODAL LOGIC ---
-        function openLogoutModal() {
-            const username = localStorage.getItem('Username') || 'User';
-            document.getElementById('logoutModalUsername').textContent = username;
-            
-            // Update modal icon based on setting
-            const modalIconImg = document.getElementById('logoutModalIcon');
-            const modalDefaultIcon = document.getElementById('logoutModalDefaultIcon');
-            
-            if (USER_ICON_URL && USER_ICON_URL.trim() !== '') {
-                modalIconImg.src = USER_ICON_URL;
-                modalIconImg.classList.remove('hidden');
-                modalDefaultIcon.classList.add('hidden');
-            } else {
-                modalIconImg.classList.add('hidden');
-                modalDefaultIcon.classList.remove('hidden');
-            }
+            renderGameCards(allGameData);
+        };
 
-            document.getElementById('logoutModal').classList.remove('hidden');
-        }
-
-        function closeLogoutModal() {
-            document.getElementById('logoutModal').classList.add('hidden');
-        }
-
-        function performLogout() {
-            localStorage.removeItem('LoggedIn'); 
-            localStorage.removeItem('Username'); 
-            localStorage.removeItem('Email');
-            window.location.reload(); 
-        }
-
-        function setActiveTab(tabName) {
-            document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            renderGameCards(allGameData); 
-        }
-
-        // --- FETCH GAMES ---
-        function fetchGamesFromGoogleSheet() {
-            const script = document.createElement('script');
-            script.src = `${API_URL}?type=games&callback=handleGamesData`;
-            document.head.appendChild(script);
-        }
-
-        function handleGamesData(data) {
-            if (Array.isArray(data) && data.length > 0) {
-                const mappedGames = data.map(item => ({
-                    gameName: item["Game Name"] || item["gameName"],
-                    gameImageUrl: item["Game Image URL"] || item["gameImageUrl"],
-                    gameUrl: item["Game URL"] || item["gameUrl"],
-                    visibility: item["Visibility"] || item["visibility"]
-                })).filter(g => g.gameName && String(g.visibility).toUpperCase() === 'TRUE');
-                allGameData = mappedGames;
-                renderGameCards(allGameData);
-            } else { renderGameCards(mockGamesData); }
-        }
-
-        // --- FETCH SOCIAL LINKS ---
-        function fetchSocialLinks() {
-            const script = document.createElement('script');
-            script.src = `${API_URL}?type=socials&callback=handleSocialLinksData`;
-            document.head.appendChild(script);
-        }
-
-        function handleSocialLinksData(data) {
-            if (Array.isArray(data) && data.length > 0) {
-                const visibleLinks = data.filter(item => {
-                    const visibility = item["Visibility"] || item["visibility"];
-                    return visibility && (String(visibility).trim().toUpperCase() === 'TRUE');
-                }).map(item => ({
-                    Platform: item["Platform"] || item["platform"],
-                    URL: item["URL"] || item["url"],
-                    IconUrl: item["IconUrl"] || item["iconUrl"]
-                }));
-                renderSocialIcons(visibleLinks);
-            } else { document.getElementById('social-buttons-container').innerHTML = ''; }
-        }
-
-        function renderSocialIcons(data) {
-            const container = document.getElementById('social-buttons-container');
-            container.innerHTML = '';
-            data.forEach(item => {
-                if (!item.URL) return;
-                const button = document.createElement('a');
-                button.className = `floating-social-btn`; 
-                button.href = item.URL; button.target = '_blank'; button.title = item.Platform;
-                const img = document.createElement('img');
-                img.src = item.IconUrl || `https://placehold.co/48x48/333333/ffffff?text=${item.Platform.charAt(0)}`;
-                img.alt = item.Platform;
-                img.onerror = function() { this.style.display = 'none'; };
-                button.appendChild(img);
-                container.appendChild(button);
-            });
-        }
-
-        function renderGameCards(games) {
+        window.renderGameCards = function(games) {
             const gameGrid = document.getElementById('gameGrid');
-            gameGrid.innerHTML = '';
+            if (!gameGrid) return; 
+            
+            gameGrid.innerHTML = ''; 
+
+            if (games.length === 0) {
+                gameGrid.innerHTML = '<p class="text-center col-span-full text-gray-400">No games available.</p>';
+                return;
+            }
+
             games.forEach(game => {
                 const card = document.createElement('div');
                 card.className = 'glass-card rounded-xl cursor-pointer group flex flex-col justify-between'; 
-                // *** No Login Check Required ***
-                card.onclick = () => {
-                    window.open(game.gameUrl, '_blank');
-                };
-                card.innerHTML = `
-                    <div class="w-full flex justify-center items-center h-28 sm:h-36 overflow-hidden">
-                        <img src="${game.gameImageUrl}" alt="${game.gameName}" class="w-full h-full object-cover transition duration-300 transform group-hover:scale-[1.05]" onerror="this.src='https://placehold.co/400x400/1f2937/ffffff?text=Game'">
-                    </div>
-                    <div class="px-1 py-1 text-center"><h3 class="game-title-pop font-medium transition duration-200">${game.gameName}</h3></div>`;
+                card.onclick = () => openGame(game); 
+
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'w-full flex justify-center items-center h-28 sm:h-36 overflow-hidden'; 
+
+                const img = document.createElement('img');
+                img.src = game.gameImageUrl;
+                img.alt = game.gameName;
+                img.className = 'w-full h-full object-cover transition duration-300 transform group-hover:scale-[1.05]'; 
+                img.onerror = function() { this.src='https://placehold.co/400x400/1f2937/ffffff?text=Missing'; };
+
+                const content = document.createElement('div');
+                content.className = 'px-1 py-1 text-center'; 
+
+                const name = document.createElement('h3');
+                name.textContent = game.gameName;
+                name.className = 'game-title-pop font-medium transition duration-200'; 
+                
+                content.appendChild(name);
+                imgContainer.appendChild(img);
+                card.appendChild(imgContainer); 
+                card.appendChild(content); 
                 gameGrid.appendChild(card);
             });
+        };
+
+        window.openGame = function(game) {
+            let url = (activeTab === 'player') ? game.playerUrl : game.agentUrl;
+            if (url && url.trim() !== '#' && url.trim() !== '') {
+                window.open(url, '_blank');
+            } else {
+                alert(`No ${activeTab} link available for ${game.gameName}.`);
+            }
+        };
+
+        // *** 2. PAGE RENDERERS ***
+
+        window.renderHomePage = function() {
+            const mainContentDiv = document.getElementById('mainContent');
+            mainContentDiv.innerHTML = `
+                <h2 class="text-3xl font-bold mb-8 text-white uppercase tracking-wide border-b border-secondary-glow/50 pb-2 hidden sm:block">Featured Games</h2>
+                <div class="flex justify-center mb-8 border-b border-white/10">
+                    <div class="flex space-x-4">
+                        <div id="tab-player" class="tab-button" onclick="setActiveTab('player')">Player Link</div>
+                        <div id="tab-agent" class="tab-button" onclick="setActiveTab('agent')">Agent Link</div>
+                    </div>
+                </div>
+                <div id="gameGrid" class="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6"></div>
+            `;
+            setActiveTab(activeTab);
+        };
+
+        window.renderAdminPage = function() {
+            const mainContentDiv = document.getElementById('mainContent');
+            mainContentDiv.innerHTML = `
+                <div class="glass-card rounded-xl p-6 mb-8 text-center">
+                    <h2 class="text-3xl font-bold text-secondary-glow uppercase mb-4">Admin Config</h2>
+                    <p>Site Name: <strong>${siteConfig.siteName}</strong></p>
+                    <p>Total Games Loaded: ${allGameData.length}</p>
+                </div>
+            `;
+        };
+
+        window.navigateTo = function(page) {
+            const mainContentDiv = document.getElementById('mainContent');
+            mainContentDiv.innerHTML = '';
+            
+            closeModal('getInChoiceModal'); 
+            closeModal('loginModal');
+            closeModal('signupModal');
+
+            const footer = document.querySelector('footer');
+
+            if (page === 'home') {
+                renderHomePage();
+                footer.style.display = 'block';
+            } else if (page === 'admin') {
+                renderAdminPage();
+                footer.style.display = 'none';
+            }
+        };
+
+        // *** 3. DATA FETCHING (JSONP CALLBACK) ***
+
+        window.handleGamesData = function(response) {
+            console.log("Full API Response:", response);
+            
+            if (response.config) {
+                const title = document.getElementById('siteTitle');
+                if (title && response.config.siteName) {
+                    title.textContent = response.config.siteName.toUpperCase();
+                    document.title = response.config.siteName;
+                    siteConfig = response.config;
+                    document.getElementById("footer-copy").innerHTML = "&copy; 2025@"+`${siteConfig.siteName}`+".com";
+                }
+            }
+
+            let rawData = [];
+            if (Array.isArray(response)) {
+                rawData = response;
+            } else if (response.games && Array.isArray(response.games)) {
+                rawData = response.games;
+            }
+
+            if (rawData.length > 0) {
+                allGameData = rawData.map(normalizeGameData).filter(g => 
+                    g.gameName && 
+                    g.gameName !== 'Untitled' &&
+                    g.visibility === 'TRUE'
+                );
+            } else {
+                allGameData = mockGamesData;
+            }
+            
+            navigateTo('home');
+        };
+
+        function fetchGamesFromGoogleSheet() {
+            navigateTo('home');
+            const script = document.createElement('script');
+            script.src = `${GOOGLE_SHEET_API_URL}?callback=handleGamesData`;
+            script.onerror = () => {
+                console.error("JSONP Script failed to load.");
+            };
+            document.head.appendChild(script);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            checkLoginStatus(); fetchGamesFromGoogleSheet(); fetchSocialLinks(); setActiveTab('player'); 
+        // *** 4. MODALS & AUTH ***
+
+        window.openModal = function(id) {
+            // document.body.classList.add('overflow-hidden');
+            // const m = document.getElementById(id);
+            // const b = document.getElementById('modalBackdrop');
+            // if(m && b) {
+            //     m.style.visibility = 'visible';
+            //     m.classList.remove('scale-90'); m.classList.add('scale-100');
+            //     b.classList.add('open');
+            // }
+            window.location.href = "login.html";
+        };
+
+        window.closeModal = function(id) {
+            document.body.classList.remove('overflow-hidden');
+            const m = document.getElementById(id);
+            const b = document.getElementById('modalBackdrop');
+            if(m && b) {
+                m.classList.remove('scale-100'); m.classList.add('scale-90');
+                b.classList.remove('open');
+                setTimeout(() => { m.style.visibility = 'hidden'; }, 300);
+            }
+        };
+
+        window.handleGetIn = function() { openModal('getInChoiceModal'); };
+        
+        window.handleUserAction = function(type) {
+            const user = document.getElementById(type + '-username').value;
+            
+            // SIMULATE LOGIN: Set LocalStorage
+            localStorage.setItem('Username', user);
+            localStorage.setItem('LoggedIn', 'true');
+
+            if (type === 'login' && user.toLowerCase() === 'admin') {
+                userIsAdmin = true;
+                document.getElementById('adminBtn').classList.remove('hidden');
+            }
+            
+            closeModal(type + 'Modal');
+            
+            // Refresh User Session UI
+            checkUserSession();
+            navigateTo('home');
+        };
+
+        // *** 5. USER SESSION MANAGEMENT ***
+
+        window.checkUserSession = function() {
+            // Check LocalStorage keys
+            const username = localStorage.getItem('Username');
+            const loggedIn = localStorage.getItem('LoggedIn');
+            
+            const getInBtn = document.getElementById('getInBtn');
+            const userProfile = document.getElementById('userProfile');
+            const displayUsername = document.getElementById('displayUsername');
+
+            if (loggedIn === 'true' && username) {
+                // User is logged in
+                if(getInBtn) getInBtn.classList.add('hidden');
+                if(userProfile) userProfile.classList.remove('hidden');
+                if(displayUsername) displayUsername.textContent = username;
+            } else {
+                // User is NOT logged in
+                if(getInBtn) getInBtn.classList.remove('hidden');
+                if(userProfile) userProfile.classList.add('hidden');
+            }
+        };
+
+        window.toggleLogoutMenu = function() {
+            const menu = document.getElementById('logoutMenu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        };
+
+        window.handleLogout = function(event) {
+            if(event) event.stopPropagation(); // Prevent bubbling
+            
+            // Clear all local storage
+            localStorage.clear();
+            
+            // Hide menu and re-check session
+            document.getElementById('logoutMenu').classList.add('hidden');
+            checkUserSession();
+            navigateTo('home');
+        };
+        
+        // Close logout menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const userProfile = document.getElementById('userProfile');
+            const logoutMenu = document.getElementById('logoutMenu');
+            // If click is outside userProfile div, close menu
+            if (userProfile && !userProfile.contains(event.target)) {
+                if(logoutMenu) logoutMenu.classList.add('hidden');
+            }
         });
+
+        // *** 6. INIT ***
+        
+        document.getElementById('modalBackdrop').addEventListener('click', () => {
+            closeModal('getInChoiceModal'); closeModal('loginModal'); closeModal('signupModal');
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkUserSession(); // Check login status immediately
+            fetchGamesFromGoogleSheet();
+        });
+
     </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Arcade - Sign Up</title>
+    <title>Sign Up - </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -69,9 +69,10 @@
 <body class="font-sans text-white">
 
     <header class="flex justify-between items-center glass-card rounded-xl p-4 md:p-6 sticky top-0 z-10 mx-4 mt-4 mb-8">
-        <a href="index.html" class="no-underline">
-            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary-neon animate-pulse-glow tracking-wider uppercase">
-                QUANTUM ARCADE
+        <!-- Added IDs to allow dynamic updates -->
+        <a href="index.html" id="siteLink" class="no-underline">
+            <h1 id="siteTitle" class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-primary-neon animate-pulse-glow tracking-wider uppercase">
+                
             </h1>
         </a>
     </header>
@@ -128,7 +129,36 @@
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxUmAfhmeqR0-rhD1U0YdlrhXCNE560O6x6N-C5Ve2suKq6wzk3OOhs2MaPI3B9qJqHDQ/exec';
+        // *** REPLACE WITH YOUR DEPLOYED WEB APP URL ***
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxHKM0oYLwtg8egGXcxOHbK9LNQ0KylGi4LaNQMaB37jrtDEZSVqjDhePgo5p3IIUjguw/exec';
+
+        // --- 1. DYNAMIC CONFIG LOADING (JSONP) ---
+        
+        // This function handles the JSONP response to update the site title
+        function handleConfigData(response) {
+            if (response && response.config) {
+                const titleEl = document.getElementById('siteTitle');
+                const linkEl = document.getElementById('siteLink');
+                
+                if (titleEl) {
+                    titleEl.textContent = response.config.siteName.toUpperCase();
+                    document.title = response.config.siteName + " - Sign Up";
+                }
+                if (linkEl && response.config.siteLink) {
+                    linkEl.href = response.config.siteLink;
+                }
+            }
+        }
+
+        function fetchConfig() {
+            const script = document.createElement('script');
+            // We use the same API URL but with a callback for GET request
+            script.src = `${API_URL}?callback=handleConfigData`;
+            script.onerror = () => console.log('Config load failed, using defaults.');
+            document.head.appendChild(script);
+        }
+
+        // --- 2. SIGNUP FORM LOGIC ---
 
         const form = document.getElementById('signupForm');
         const submitBtn = document.getElementById('submitBtn');
@@ -175,8 +205,11 @@
                 password: password
             };
 
+            // Using standard fetch POST for signup data
             fetch(API_URL, {
                 method: "POST",
+                // 'text/plain' helps avoid CORS preflight issues in some Apps Script deployments
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify(payload)
             })
             .then(response => response.json())
@@ -238,6 +271,9 @@
                 }
             }, 5000);
         }
+
+        // Initialize Config Loading
+        document.addEventListener('DOMContentLoaded', fetchConfig);
     </script>
 </body>
 </html>

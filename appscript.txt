@@ -1,0 +1,227 @@
+// *** CONFIGURATION ***
+// Tab Names (Must match your sheet tabs exactly)
+const SHEET_GAMES = "Games";
+const SHEET_CONFIG = "Config";      // New Sheet for Site Name/Link
+const SHEET_SOCIALS = "SocialLinks";
+const SHEET_USERS = "Users";
+
+// --- GET HANDLER (For index.html display) ---
+function doGet(e) {
+  const callback = e.parameter.callback; // For JSONP
+  const type = e.parameter.type; // Optional filter
+  
+  const result = {};
+
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // 1. FETCH CONFIG (Site Name & Link)
+    try {
+      const configSheet = ss.getSheetByName(SHEET_CONFIG);
+      if (configSheet && configSheet.getLastRow() >= 2) {
+        const data = configSheet.getRange("A2:B2").getValues();
+        result.config = {
+          siteName: data[0][0] || "Quantum Arcade",
+          siteLink: data[0][1] || "#"
+        };
+      } else {
+        result.config = { siteName: "Quantum Arcade", siteLink: "#" };
+      }
+    } catch (err) {
+      result.config = { siteName: "Quantum Arcade", siteLink: "#" };
+    }
+
+    // 2. FETCH GAMES (With Player/Agent Links)
+    try {
+      const gameSheet = ss.getSheetByName(SHEET_GAMES);
+      if (gameSheet) {
+        const data = gameSheet.getDataRange().getValues();
+        if (data.length > 1) {
+          // Headers: [0]Game Name, [1]Image, [2]Player URL, [3]Agent URL, [4]Visibility
+          result.games = data.slice(1).map(row => ({
+            gameName: row[0],
+            gameImageUrl: row[1],
+            playerUrl: row[2], // Specific column for Player
+            agentUrl: row[3],  // Specific column for Agent
+            visibility: String(row[4]).toUpperCase()
+          }));
+        } else {
+          result.games = [];
+        }
+      }
+    } catch (err) {
+      result.games = [];
+    }
+
+    // 3. FETCH SOCIALS (If needed)
+    try {
+      const socialSheet = ss.getSheetByName(SHEET_SOCIALS);
+      if (socialSheet) {
+        const data = socialSheet.getDataRange().getValues();
+        if (data.length > 1) {
+          // Generic mapping for socials based on headers
+          const headers = data[0];
+          result.socials = data.slice(1).map(row => {
+            let obj = {};
+            headers.forEach((h, i) => obj[h.toString().trim()] = row[i]);
+            return obj;
+          });
+        }
+      }
+    } catch (err) {
+      result.socials = [];
+    }
+
+  } catch (fatal) {
+    result.error = fatal.toString();
+  }
+
+  // RETURN JSONP
+  const json = JSON.stringify(result);
+  
+  if (callback) {
+    return ContentService.createTextOutput(callback + '(' + json + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  } else {
+    return ContentService.createTextOutput(json)
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// --- POST HANDLER (For Login, Signup, Admin) ---
+function doPost(e) {
+  const lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const action = data.action;
+    
+    if (action === 'signup') return handleSignup(data);
+    if (action === 'login') return handleLogin(data);
+    if (action === 'get_data') return handleAdminGetData(data);
+    if (action === 'update_row') return handleUpdateRow(data);
+    if (action === 'add_row') return handleAddRow(data);
+    if (action === 'delete_row') return handleDeleteRow(data);
+
+    return createJSONOutput("error", "Invalid action");
+
+  } catch (error) {
+    return createJSONOutput("error", error.toString());
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// --- AUTH LOGIC ---
+function handleSignup(data) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_USERS);
+  if (!sheet) return createJSONOutput("error", "User sheet missing");
+  
+  const values = sheet.getDataRange().getValues();
+  
+  // Check duplicates (Assumes Col B is Username, Col C is Email)
+  // Headers are row 0, data starts row 1
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][1] == data.username) return createJSONOutput("duplicate_username", "Username taken");
+    if (values[i][2] == data.email) return createJSONOutput("duplicate_email", "Email taken");
+  }
+  
+  // Hash & Save
+  // Order: Full Name, Username, Email, Password, Timestamp
+  sheet.appendRow([
+    data.fullname, 
+    data.username, 
+    data.email, 
+    Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, data.password)), // Simple Hash
+    new Date()
+  ]);
+  return createJSONOutput("success", "Account created");
+}
+
+function handleLogin(data) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_USERS);
+  if (!sheet) return createJSONOutput("error", "User sheet missing");
+
+  const values = sheet.getDataRange().getValues();
+  const hashedInput = Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, data.password));
+  
+  for (let i = 1; i < values.length; i++) {
+    // Check Username (Col B) OR Email (Col C) AND Password (Col D)
+    const dbUser = values[i][1];
+    const dbEmail = values[i][2];
+    const dbPass = values[i][3];
+
+    if ((dbUser == data.username || dbEmail == data.username) && dbPass == hashedInput) {
+      return ContentService.createTextOutput(JSON.stringify({
+        result: "success",
+        username: dbUser,
+        email: dbEmail
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  return createJSONOutput("error", "Invalid credentials");
+}
+
+// --- ADMIN LOGIC ---
+function handleAdminGetData(data) {
+  let sheetName = getSheetNameByType(data.type);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  if (!sheet) return createJSONOutput("error", "Sheet not found");
+  
+  const values = sheet.getDataRange().getValues();
+  return createJSONOutput("success", values); 
+}
+
+function handleUpdateRow(data) {
+  let sheetName = getSheetNameByType(data.type);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  const values = sheet.getDataRange().getValues();
+  
+  let keyColIndex = 0; // Assuming ID/Key is in Col A
+  
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][keyColIndex]) === String(data.originalKey)) {
+      // Update row. data.newData must match column count
+      const rowRange = sheet.getRange(i + 1, 1, 1, data.newData.length);
+      rowRange.setValues([data.newData]);
+      return createJSONOutput("success", "Updated");
+    }
+  }
+  return createJSONOutput("error", "Item not found");
+}
+
+function handleAddRow(data) {
+  let sheetName = getSheetNameByType(data.type);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  sheet.appendRow(data.newData);
+  return createJSONOutput("success", "Added");
+}
+
+function handleDeleteRow(data) {
+  let sheetName = getSheetNameByType(data.type);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  const values = sheet.getDataRange().getValues();
+  
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0]) === String(data.key)) {
+      sheet.deleteRow(i + 1);
+      return createJSONOutput("success", "Deleted");
+    }
+  }
+  return createJSONOutput("error", "Item not found");
+}
+
+// --- HELPERS ---
+function getSheetNameByType(type) {
+  if (type === 'games') return SHEET_GAMES;
+  if (type === 'socials') return SHEET_SOCIALS;
+  if (type === 'users') return SHEET_USERS;
+  if (type === 'config') return SHEET_CONFIG;
+  return SHEET_GAMES;
+}
+
+function createJSONOutput(status, msg) {
+  return ContentService.createTextOutput(JSON.stringify({ result: status, message: msg || "" }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
